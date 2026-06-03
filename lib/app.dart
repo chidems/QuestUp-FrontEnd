@@ -1,0 +1,19 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/routing/app_router.dart';
+import 'core/theme/app_theme.dart';
+
+class QuestUpApp extends ConsumerWidget {
+  const QuestUpApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    return MaterialApp.router(
+      title: 'Quest Up',
+      theme: AppTheme.theme,
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
