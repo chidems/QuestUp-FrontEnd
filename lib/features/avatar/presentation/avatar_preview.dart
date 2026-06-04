@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../models/avatar_models.dart';
 
 /// Renders the equipped look. Layers item images back-to-front when assets are
@@ -23,8 +23,8 @@ class AvatarPreview extends StatelessWidget {
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.primaryLight, width: 2),
+          color: context.colors.surface,
+          boxShadow: context.colors.pixelBorder(),
         ),
         clipBehavior: Clip.hardEdge,
         child: layers.isEmpty
@@ -54,7 +54,7 @@ class _Placeholder extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.person, size: 80, color: AppColors.primaryLight),
+          Icon(Icons.person, size: 80, color: context.colors.primaryLight),
           const SizedBox(height: 8),
           Text(
             equippedCount == 0

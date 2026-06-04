@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/constants/quest_constants.dart';
 import '../../../core/location/location_service.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -75,12 +75,12 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const Divider(),
             const _SectionLabel('Privacy'),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Text(
                 'Weekly quest photos are private by default. They are only '
                 'shared to the community page if you choose to share them.',
-                style: TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: context.colors.textMuted),
               ),
             ),
             const Divider(),
@@ -88,11 +88,11 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: OutlinedButton.icon(
                 onPressed: () => ref.read(authStateProvider.notifier).logout(),
-                icon: const Icon(Icons.logout, color: AppColors.error),
-                label: const Text('Log out',
-                    style: TextStyle(color: AppColors.error)),
+                icon: Icon(Icons.logout, color: context.colors.error),
+                label: Text('Log out',
+                    style: TextStyle(color: context.colors.error)),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.error),
+                  side: BorderSide(color: context.colors.error),
                 ),
               ),
             ),
@@ -114,7 +114,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text.toUpperCase(),
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               letterSpacing: 1.5,
               fontWeight: FontWeight.bold,
             ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/category_icon.dart';
+import '../../../shared/widgets/pixel_box.dart';
 import '../../../shared/widgets/pixel_button.dart';
 import '../models/quest_models.dart';
 import '../providers/quest_detail_provider.dart';
@@ -73,13 +74,13 @@ class _QuestDetailBody extends StatelessWidget {
                     icon: Icons.bolt,
                     label: 'XP',
                     value: '${quest.xpReward}',
-                    color: AppColors.xpColor,
+                    color: context.colors.xpColor,
                   ),
                   _InfoTile(
                     icon: Icons.monetization_on,
                     label: 'Coins',
                     value: '${quest.coinReward}',
-                    color: AppColors.accent,
+                    color: context.colors.accent,
                   ),
                 ],
               ),
@@ -150,7 +151,7 @@ class _LocationInfo extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.place, size: 18, color: AppColors.locationQuest),
+        Icon(Icons.place, size: 18, color: context.colors.locationQuest),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -178,13 +179,9 @@ class _InfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.textSecondary;
-    return Container(
+    final c = color ?? context.colors.textSecondary;
+    return PixelBox(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.primaryLight),
-      ),
       child: Column(
         children: [
           Icon(icon, color: c, size: 20),

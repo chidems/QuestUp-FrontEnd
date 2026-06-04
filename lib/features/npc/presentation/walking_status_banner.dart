@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
+import '../../../shared/widgets/pixel_box.dart';
 import '../providers/walking_session_provider.dart';
 
 /// Banner on the quest feed for starting/stopping walking mode (the trigger for
@@ -57,10 +58,10 @@ class _WalkingStatusBannerState extends ConsumerState<WalkingStatusBanner>
 
     if (!session.isActive) {
       return _Card(
-        color: AppColors.surfaceVariant,
+        color: context.colors.surfaceVariant,
         child: Row(
           children: [
-            const Icon(Icons.directions_walk, color: AppColors.primaryLight),
+            Icon(Icons.directions_walk, color: context.colors.primaryLight),
             const SizedBox(width: 12),
             const Expanded(
               child: Text(
@@ -78,14 +79,14 @@ class _WalkingStatusBannerState extends ConsumerState<WalkingStatusBanner>
 
     final since = session.walkingSince;
     return _Card(
-      color: AppColors.surface,
+      color: context.colors.surface,
       child: Row(
         children: [
           Icon(
             session.isWalking
                 ? Icons.directions_walk
                 : Icons.accessibility_new,
-            color: session.isWalking ? AppColors.xpColor : AppColors.textMuted,
+            color: session.isWalking ? context.colors.xpColor : context.colors.textMuted,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -103,7 +104,7 @@ class _WalkingStatusBannerState extends ConsumerState<WalkingStatusBanner>
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
-                      ?.copyWith(color: AppColors.textMuted),
+                      ?.copyWith(color: context.colors.textMuted),
                 ),
               ],
             ),
@@ -126,13 +127,10 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return PixelBox(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: AppColors.primaryLight),
-      ),
+      color: color,
       child: child,
     );
   }

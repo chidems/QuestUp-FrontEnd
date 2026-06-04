@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// A single life-stat row: name, points, and a bar filled relative to the
 /// strongest stat (so the visualization works without backend thresholds).
@@ -42,8 +42,8 @@ class StatBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: fill,
               minHeight: 8,
-              backgroundColor: AppColors.surfaceVariant,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primaryLight),
+              backgroundColor: context.colors.surfaceVariant,
+              valueColor: AlwaysStoppedAnimation(context.colors.primaryLight),
             ),
           ),
         ],

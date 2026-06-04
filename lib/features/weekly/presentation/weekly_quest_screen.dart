@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/weekly_quest_card.dart';
@@ -53,7 +53,7 @@ class _Body extends StatelessWidget {
         Text(
           'COMMUNITY PHOTOS',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 letterSpacing: 1.5,
                 fontWeight: FontWeight.bold,
               ),
@@ -81,8 +81,8 @@ class _EmptyPhotos extends StatelessWidget {
       alignment: Alignment.center,
       child: Column(
         children: [
-          const Icon(Icons.photo_camera_back,
-              size: 40, color: AppColors.textMuted),
+          Icon(Icons.photo_camera_back,
+              size: 40, color: context.colors.textMuted),
           const SizedBox(height: 12),
           Text(
             'No shared photos yet.\nComplete the quest and be the first!',
@@ -103,8 +103,8 @@ class _PhotoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.primaryLight),
+        color: context.colors.surface,
+        border: Border.all(color: context.colors.primaryLight),
       ),
       clipBehavior: Clip.hardEdge,
       child: Column(
@@ -115,13 +115,13 @@ class _PhotoCard extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: post.photoUrl,
               fit: BoxFit.cover,
-              placeholder: (_, __) => const ColoredBox(
-                color: AppColors.surfaceVariant,
-                child: Center(child: CircularProgressIndicator()),
+              placeholder: (_, __) => ColoredBox(
+                color: context.colors.surfaceVariant,
+                child: const Center(child: CircularProgressIndicator()),
               ),
-              errorWidget: (_, __, ___) => const ColoredBox(
-                color: AppColors.surfaceVariant,
-                child: Icon(Icons.broken_image, color: AppColors.textMuted),
+              errorWidget: (_, __, ___) => ColoredBox(
+                color: context.colors.surfaceVariant,
+                child: Icon(Icons.broken_image, color: context.colors.textMuted),
               ),
             ),
           ),
@@ -141,8 +141,8 @@ class _PhotoCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     if (post.likesCount != null) ...[
-                      const Icon(Icons.favorite,
-                          size: 14, color: AppColors.socialQuest),
+                      Icon(Icons.favorite,
+                          size: 14, color: context.colors.socialQuest),
                       const SizedBox(width: 3),
                       Text('${post.likesCount}',
                           style: Theme.of(context).textTheme.labelSmall),
@@ -161,7 +161,7 @@ class _PhotoCard extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .labelSmall
-                        ?.copyWith(color: AppColors.textMuted),
+                        ?.copyWith(color: context.colors.textMuted),
                   ),
                 ],
               ],

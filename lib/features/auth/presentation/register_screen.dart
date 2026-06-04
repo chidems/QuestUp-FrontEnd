@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
 import '../providers/auth_provider.dart';
 
@@ -46,7 +46,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (next.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(next.error.toString()),
-          backgroundColor: AppColors.error,
+          backgroundColor: context.colors.error,
         ));
       }
     });

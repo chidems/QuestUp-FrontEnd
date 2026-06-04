@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/location/location_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/models/auth_models.dart';
@@ -128,7 +128,7 @@ class _EmptyQuests extends StatelessWidget {
       alignment: Alignment.center,
       child: Column(
         children: [
-          const Icon(Icons.explore_off, size: 40, color: AppColors.textMuted),
+          Icon(Icons.explore_off, size: 40, color: context.colors.textMuted),
           const SizedBox(height: 12),
           Text(
             'No active quests right now.\nPull down to refresh and find new ones.',
@@ -173,7 +173,7 @@ class _FeedError extends StatelessWidget {
             Icon(
               isLocation ? Icons.location_off : Icons.error_outline,
               size: 48,
-              color: AppColors.error,
+              color: context.colors.error,
             ),
             const SizedBox(height: 16),
             Text(
@@ -208,7 +208,7 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       title.toUpperCase(),
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             letterSpacing: 1.5,
             fontWeight: FontWeight.bold,
           ),
@@ -228,13 +228,13 @@ class _QuestFeedHud extends StatelessWidget {
     final progress = (user.totalXp % 100) / 100;
 
     return Container(
-      color: AppColors.surface,
+      color: context.colors.surface,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
         children: [
           CircleAvatar(
             radius: 22,
-            backgroundColor: AppColors.primary,
+            backgroundColor: context.colors.primary,
             child: Text(
               'L${user.level}',
               style: const TextStyle(
@@ -261,8 +261,8 @@ class _QuestFeedHud extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: AppColors.surfaceVariant,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.xpColor),
+                    backgroundColor: context.colors.surfaceVariant,
+                    valueColor: AlwaysStoppedAnimation(context.colors.xpColor),
                   ),
                 ),
               ],
@@ -272,13 +272,13 @@ class _QuestFeedHud extends StatelessWidget {
           _HudChip(
             icon: Icons.monetization_on,
             label: '${user.coins}',
-            color: AppColors.accent,
+            color: context.colors.accent,
           ),
           const SizedBox(width: 8),
           _HudChip(
             icon: Icons.local_fire_department,
             label: '${user.currentStreak}',
-            color: AppColors.actionQuest,
+            color: context.colors.actionQuest,
           ),
         ],
       ),

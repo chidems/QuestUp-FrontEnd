@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -71,7 +71,7 @@ class _Body extends StatelessWidget {
         Text(
           'INVENTORY',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 letterSpacing: 1.5,
                 fontWeight: FontWeight.bold,
               ),
@@ -156,18 +156,18 @@ class _EquippedLabel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.xpColor.withValues(alpha: 0.2),
-        border: Border.all(color: AppColors.xpColor),
+        color: context.colors.xpColor.withValues(alpha: 0.2),
+        border: Border.all(color: context.colors.xpColor),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check, size: 14, color: AppColors.xpColor),
-          SizedBox(width: 4),
+          Icon(Icons.check, size: 14, color: context.colors.xpColor),
+          const SizedBox(width: 4),
           Text(
             'Equipped',
             style: TextStyle(
-              color: AppColors.xpColor,
+              color: context.colors.xpColor,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -186,8 +186,8 @@ class _EmptyInventory extends StatelessWidget {
       alignment: Alignment.center,
       child: Column(
         children: [
-          const Icon(Icons.inventory_2_outlined,
-              size: 40, color: AppColors.textMuted),
+          Icon(Icons.inventory_2_outlined,
+              size: 40, color: context.colors.textMuted),
           const SizedBox(height: 12),
           Text(
             'No items yet.\nVisit the shop to gear up!',

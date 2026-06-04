@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/constants/quest_constants.dart';
+import '../../core/theme/app_palette.dart';
+import 'pixel_badge.dart';
 
 class RarityBadge extends StatelessWidget {
   final String rarity;
@@ -9,40 +10,24 @@ class RarityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = rarityColor(rarity);
     final label = rarity.isEmpty
         ? rarity
         : '${rarity[0].toUpperCase()}${rarity.substring(1)}';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 10,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
+    return PixelBadge(label: label, color: rarityColor(context.colors, rarity));
   }
 }
 
-Color rarityColor(String rarity) {
+Color rarityColor(AppPalette p, String rarity) {
   switch (rarity) {
     case Rarity.uncommon:
-      return AppColors.rarityUncommon;
+      return p.rarityUncommon;
     case Rarity.rare:
-      return AppColors.rarityRare;
+      return p.rarityRare;
     case Rarity.epic:
-      return AppColors.rarityEpic;
+      return p.rarityEpic;
     case Rarity.legendary:
-      return AppColors.rarityLegendary;
+      return p.rarityLegendary;
     default:
-      return AppColors.rarityCommon;
+      return p.rarityCommon;
   }
 }

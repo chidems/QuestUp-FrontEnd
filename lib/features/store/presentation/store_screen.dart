@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/constants/quest_constants.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -67,13 +67,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                const Icon(Icons.monetization_on,
-                    color: AppColors.accent, size: 20),
+                Icon(Icons.monetization_on,
+                    color: context.colors.accent, size: 20),
                 const SizedBox(width: 4),
                 Text(
                   '$coins',
-                  style: const TextStyle(
-                    color: AppColors.accent,
+                  style: TextStyle(
+                    color: context.colors.accent,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

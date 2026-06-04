@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/item_thumbnail.dart';
+import '../../../shared/widgets/pixel_box.dart';
 import '../../../shared/widgets/rarity_badge.dart';
 import '../../avatar/models/avatar_models.dart';
 
@@ -20,14 +21,9 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(
-          color: item.isEquipped ? AppColors.xpColor : AppColors.primaryLight,
-        ),
-      ),
+    return PixelBox(
       padding: const EdgeInsets.all(10),
+      highlightColor: item.isEquipped ? context.colors.xpColor : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,7 +53,7 @@ class ItemCard extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .labelSmall
-                      ?.copyWith(color: AppColors.textMuted),
+                      ?.copyWith(color: context.colors.textMuted),
                 ),
               ),
               RarityBadge(rarity: item.rarity),
@@ -72,7 +68,7 @@ class ItemCard extends StatelessWidget {
 
   Widget _action(BuildContext context) {
     if (item.isEquipped) {
-      return const _StateButton(label: 'Equipped', color: AppColors.xpColor);
+      return _StateButton(label: 'Equipped', color: context.colors.xpColor);
     }
     if (item.isOwned) {
       return SizedBox(
@@ -85,7 +81,7 @@ class ItemCard extends StatelessWidget {
       child: ElevatedButton(
         onPressed: canAfford ? onBuy : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accent,
+          backgroundColor: context.colors.accent,
           foregroundColor: Colors.black,
         ),
         child: Row(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
 import '../../auth/models/auth_models.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -104,8 +104,8 @@ class _Header extends ConsumerWidget {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 10,
-            backgroundColor: AppColors.surfaceVariant,
-            valueColor: const AlwaysStoppedAnimation(AppColors.xpColor),
+            backgroundColor: context.colors.surfaceVariant,
+            valueColor: AlwaysStoppedAnimation(context.colors.xpColor),
           ),
         ),
         const SizedBox(height: 4),
@@ -118,15 +118,15 @@ class _Header extends ConsumerWidget {
             _Stat(
                 icon: Icons.monetization_on,
                 label: '${user.coins}',
-                color: AppColors.accent),
+                color: context.colors.accent),
             _Stat(
                 icon: Icons.local_fire_department,
                 label: '${user.currentStreak}',
-                color: AppColors.actionQuest),
+                color: context.colors.actionQuest),
             _Stat(
                 icon: Icons.emoji_events,
                 label: 'Best ${user.longestStreak}',
-                color: AppColors.rarityLegendary),
+                color: context.colors.rarityLegendary),
           ],
         ),
       ],
@@ -230,7 +230,7 @@ class _SectionLabel extends StatelessWidget {
     return Text(
       text.toUpperCase(),
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             letterSpacing: 1.5,
             fontWeight: FontWeight.bold,
           ),

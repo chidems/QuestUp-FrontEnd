@@ -73,11 +73,11 @@ lib/
   app.dart                — MaterialApp.router wired to GoRouter
   core/
     config/app_config.dart        — API URL and feature flags
-    constants/                    — AppColors, AppAssets, QuestConstants
+    constants/                    — AppAssets, QuestConstants
     network/                      — Dio client, AuthInterceptor, ApiException
     routing/                      — AppRouter (GoRouter), RouteNames
     storage/                      — TokenStorage (secure), LocalCache (prefs)
-    theme/app_theme.dart          — Dark RPG theme
+    theme/                        — AppTheme (light+dark), AppPalette (theme-aware colors)
     utils/result.dart             — Result<T> sealed class
   features/
     auth/                  — Login, Register, AuthProvider, AuthRepository
@@ -126,6 +126,10 @@ Widget → Provider (Riverpod) → Repository → API client (Dio) → Backend
 - HTTP: `dio` with `AuthInterceptor` (injects Bearer token, clears on 401)
 - Token storage: `flutter_secure_storage` (EncryptedSharedPreferences on Android)
 - Local cache: `shared_preferences`
+- Theming: pixel-art RPG style (dark slate / light parchment) via an `AppPalette`
+  `ThemeExtension`, read in widgets as `context.colors`. Light + dark follow the
+  system setting (`ThemeMode.system`). Reusable pixel widgets: `PixelButton`,
+  `PixelBox`, `PixelBadge`, `PixelProgressBar`.
 
 ---
 

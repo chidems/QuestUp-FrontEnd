@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/category_icon.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/pixel_box.dart';
 import '../models/history_models.dart';
 import '../providers/history_provider.dart';
 
@@ -52,12 +53,8 @@ class _HistoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return PixelBox(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.primaryLight),
-      ),
       child: Row(
         children: [
           item.photoUrl != null && item.photoUrl!.isNotEmpty
@@ -88,7 +85,7 @@ class _HistoryRow extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .labelSmall
-                        ?.copyWith(color: AppColors.textMuted),
+                        ?.copyWith(color: context.colors.textMuted),
                   ),
               ],
             ),
@@ -99,22 +96,22 @@ class _HistoryRow extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.bolt, size: 14, color: AppColors.xpColor),
+                  Icon(Icons.bolt, size: 14, color: context.colors.xpColor),
                   const SizedBox(width: 2),
                   Text('${item.xpEarned}',
-                      style: const TextStyle(
-                          color: AppColors.xpColor,
+                      style: TextStyle(
+                          color: context.colors.xpColor,
                           fontWeight: FontWeight.bold)),
                 ],
               ),
               Row(
                 children: [
-                  const Icon(Icons.monetization_on,
-                      size: 14, color: AppColors.accent),
+                  Icon(Icons.monetization_on,
+                      size: 14, color: context.colors.accent),
                   const SizedBox(width: 2),
                   Text('${item.coinsEarned}',
-                      style: const TextStyle(
-                          color: AppColors.accent,
+                      style: TextStyle(
+                          color: context.colors.accent,
                           fontWeight: FontWeight.bold)),
                 ],
               ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/constants/app_colors.dart';
 
 class AppScaffold extends StatelessWidget {
   final StatefulNavigationShell shell;
@@ -17,9 +16,6 @@ class AppScaffold extends StatelessWidget {
           index,
           initialLocation: index == shell.currentIndex,
         ),
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primaryLight,
-        unselectedItemColor: AppColors.textMuted,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/constants/quest_constants.dart';
+import '../../core/theme/app_palette.dart';
 
-/// Round badge showing a quest category's icon and accent color.
+/// Square pixel badge showing a quest category's icon and accent color.
 class CategoryIcon extends StatelessWidget {
   final String questType;
   final double size;
@@ -11,28 +11,29 @@ class CategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.colors;
+    final color = _color(palette);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: _color.withValues(alpha: 0.2),
-        shape: BoxShape.circle,
-        border: Border.all(color: _color, width: 1.5),
+        color: color.withValues(alpha: 0.2),
+        border: Border.all(color: color, width: 1.5),
       ),
-      child: Icon(_icon, color: _color, size: size * 0.5),
+      child: Icon(_icon, color: color, size: size * 0.5),
     );
   }
 
-  Color get _color {
+  Color _color(AppPalette p) {
     switch (questType) {
       case QuestType.location:
-        return AppColors.locationQuest;
+        return p.locationQuest;
       case QuestType.social:
-        return AppColors.socialQuest;
+        return p.socialQuest;
       case QuestType.action:
-        return AppColors.actionQuest;
+        return p.actionQuest;
       default:
-        return AppColors.primaryLight;
+        return p.primaryLight;
     }
   }
 

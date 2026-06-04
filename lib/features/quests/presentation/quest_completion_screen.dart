@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -53,7 +53,7 @@ class _QuestCompletionScreenState
     final share = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         title: const Text('Share your photo?'),
         content: const Text(
           'Share this photo to the weekly community page?',
@@ -223,7 +223,7 @@ class _Body extends StatelessWidget {
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
-                          ?.copyWith(color: AppColors.textMuted),
+                          ?.copyWith(color: context.colors.textMuted),
                     ),
                   ),
                 SizedBox(
@@ -253,16 +253,16 @@ class _PhotoArea extends StatelessWidget {
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.primaryLight),
+          color: context.colors.surface,
+          border: Border.all(color: context.colors.primaryLight),
         ),
         clipBehavior: Clip.hardEdge,
         child: photo == null
-            ? const Center(
+            ? Center(
                 child: Icon(
                   Icons.add_a_photo,
                   size: 40,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               )
             : Image.file(File(photo!.path), fit: BoxFit.cover),

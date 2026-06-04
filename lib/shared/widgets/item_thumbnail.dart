@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Shows an avatar item's image, or a type-based icon placeholder until real
 /// pixel-art assets are wired in.
@@ -18,13 +18,14 @@ class ItemThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.colors;
     final url = imageUrl;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        border: Border.all(color: AppColors.primaryLight),
+        color: palette.surfaceVariant,
+        border: Border.all(color: palette.border),
       ),
       clipBehavior: Clip.hardEdge,
       child: url != null && url.isNotEmpty
@@ -33,15 +34,15 @@ class ItemThumbnail extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) =>
                   const Center(child: CircularProgressIndicator()),
-              errorWidget: (_, __, ___) => _placeholder,
+              errorWidget: (_, __, ___) => _placeholder(palette),
             )
-          : _placeholder,
+          : _placeholder(palette),
     );
   }
 
-  Widget get _placeholder => Center(
+  Widget _placeholder(AppPalette palette) => Center(
         child: Icon(_iconFor(itemType),
-            color: AppColors.textMuted, size: size * 0.45),
+            color: palette.textMuted, size: size * 0.45),
       );
 
   IconData _iconFor(String type) {

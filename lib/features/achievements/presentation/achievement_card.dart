@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../models/achievement_models.dart';
 
 class AchievementCard extends StatelessWidget {
@@ -10,15 +10,15 @@ class AchievementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final unlocked = achievement.isUnlocked;
-    final color = unlocked ? AppColors.accent : AppColors.textMuted;
+    final color = unlocked ? context.colors.accent : context.colors.textMuted;
 
     return Opacity(
       opacity: unlocked ? 1 : 0.6,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: unlocked ? color : AppColors.surfaceVariant),
+          color: context.colors.surface,
+          border: Border.all(color: unlocked ? color : context.colors.surfaceVariant),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,9 +53,9 @@ class AchievementCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: achievement.progress,
                   minHeight: 6,
-                  backgroundColor: AppColors.surfaceVariant,
+                  backgroundColor: context.colors.surfaceVariant,
                   valueColor:
-                      const AlwaysStoppedAnimation(AppColors.primaryLight),
+                      AlwaysStoppedAnimation(context.colors.primaryLight),
                 ),
               ),
               const SizedBox(height: 2),
@@ -64,7 +64,7 @@ class AchievementCard extends StatelessWidget {
                 style: Theme.of(context)
                     .textTheme
                     .labelSmall
-                    ?.copyWith(color: AppColors.textMuted),
+                    ?.copyWith(color: context.colors.textMuted),
               ),
             ],
           ],

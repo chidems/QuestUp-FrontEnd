@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../quests/models/quest_models.dart';
 import '../models/npc_models.dart';
 import '../providers/npc_encounter_provider.dart';
@@ -37,10 +37,10 @@ class _NpcEncounterModalState extends ConsumerState<NpcEncounterModal> {
     final offer = e.questOffer;
 
     return Dialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.colors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.primaryLight, width: 2),
+        borderRadius: BorderRadius.zero,
+        side: BorderSide(color: context.colors.primaryLight, width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -114,14 +114,14 @@ class _NpcAvatar extends StatelessWidget {
       width: 96,
       height: 96,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: context.colors.surfaceVariant,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.primaryLight, width: 2),
+        border: Border.all(color: context.colors.primaryLight, width: 2),
       ),
       clipBehavior: Clip.hardEdge,
       child: url != null && url.isNotEmpty
           ? CachedNetworkImage(imageUrl: url, fit: BoxFit.cover)
-          : const Icon(Icons.person, size: 48, color: AppColors.primaryLight),
+          : Icon(Icons.person, size: 48, color: context.colors.primaryLight),
     );
   }
 }
@@ -136,8 +136,9 @@ class _OfferCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        border: Border.all(color: AppColors.accent),
+        color: context.colors.surfaceVariant,
+        boxShadow:
+            context.colors.pixelBorder(highlightColor: context.colors.accent),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,18 +158,18 @@ class _OfferCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.bolt, size: 16, color: AppColors.xpColor),
+              Icon(Icons.bolt, size: 16, color: context.colors.xpColor),
               const SizedBox(width: 3),
               Text('${offer.xpReward} XP',
-                  style: const TextStyle(
-                      color: AppColors.xpColor, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: context.colors.xpColor, fontWeight: FontWeight.bold)),
               const SizedBox(width: 14),
-              const Icon(Icons.monetization_on,
-                  size: 16, color: AppColors.accent),
+              Icon(Icons.monetization_on,
+                  size: 16, color: context.colors.accent),
               const SizedBox(width: 3),
               Text('${offer.coinReward}',
-                  style: const TextStyle(
-                      color: AppColors.accent, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: context.colors.accent, fontWeight: FontWeight.bold)),
             ],
           ),
         ],

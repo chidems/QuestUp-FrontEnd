@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/category_icon.dart';
+import '../../../shared/widgets/pixel_box.dart';
 import '../models/quest_models.dart';
 
 /// RPG-style mission card. Set [featured] for the weekly quest highlight.
@@ -18,68 +19,62 @@ class QuestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final p = context.colors;
+    return PixelBox(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: featured ? AppColors.surfaceVariant : AppColors.surface,
-          border: Border.all(
-            color: featured ? AppColors.accent : AppColors.primaryLight,
-            width: featured ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CategoryIcon(questType: quest.questType),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    quest.title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
+      padding: const EdgeInsets.all(14),
+      color: featured ? p.surfaceVariant : p.surface,
+      highlightColor: featured ? p.accent : null,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CategoryIcon(questType: quest.questType),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quest.title,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _MetaChip(
+                      icon: Icons.star,
+                      label: quest.difficultyLabel,
+                      color: p.textSecondary,
+                    ),
+                    if (quest.distanceMeters != null)
                       _MetaChip(
-                        icon: Icons.star,
-                        label: quest.difficultyLabel,
-                        color: AppColors.textSecondary,
+                        icon: Icons.near_me,
+                        label: _distanceLabel(quest.distanceMeters!),
+                        color: p.locationQuest,
                       ),
-                      if (quest.distanceMeters != null)
-                        _MetaChip(
-                          icon: Icons.near_me,
-                          label: _distanceLabel(quest.distanceMeters!),
-                          color: AppColors.locationQuest,
-                        ),
-                      _MetaChip(
-                        icon: Icons.bolt,
-                        label: '${quest.xpReward} XP',
-                        color: AppColors.xpColor,
-                      ),
-                      _MetaChip(
-                        icon: Icons.monetization_on,
-                        label: '${quest.coinReward}',
-                        color: AppColors.accent,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    _MetaChip(
+                      icon: Icons.bolt,
+                      label: '${quest.xpReward} XP',
+                      color: p.xpColor,
+                    ),
+                    _MetaChip(
+                      icon: Icons.monetization_on,
+                      label: '${quest.coinReward}',
+                      color: p.accent,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textMuted),
-          ],
-        ),
+          ),
+          Icon(Icons.chevron_right, color: p.textMuted),
+        ],
       ),
     );
   }
