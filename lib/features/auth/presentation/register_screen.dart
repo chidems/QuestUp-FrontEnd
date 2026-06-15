@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../shared/widgets/pixel_button.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -108,18 +109,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       : 'Passwords do not match',
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
+                PixelButton(
+                  label: 'Create Account',
+                  fullWidth: true,
+                  isLoading: authState.isLoading,
                   onPressed: authState.isLoading ? null : _submit,
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text('Create Account'),
                 ),
                 const SizedBox(height: 12),
                 TextButton(

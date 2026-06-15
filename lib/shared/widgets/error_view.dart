@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_palette.dart';
+import 'pixel_button.dart';
 
 class ErrorView extends StatelessWidget {
   final String message;
@@ -24,7 +25,7 @@ class ErrorView extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
+              PixelButton(label: 'Retry', onPressed: onRetry),
             ],
           ],
         ),

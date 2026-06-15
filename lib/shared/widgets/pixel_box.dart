@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_radius.dart';
 
-/// A surface panel with the pixel-art chunky border (hard offset shadows).
+/// A rounded surface panel with a thin border and a soft drop shadow.
 /// Replaces the old `Container` + 1px `Border.all` pattern app-wide.
-class PixelBox extends StatelessWidget {
+/// Tappable boxes get the same press-down feedback as [PixelButton].
+class PixelBox extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry? margin;
@@ -22,18 +24,46 @@ class PixelBox extends StatelessWidget {
   });
 
   @override
+  State<PixelBox> createState() => _PixelBoxState();
+}
+
+class _PixelBoxState extends State<PixelBox> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final palette = context.colors;
-    final box = Container(
-      margin: margin,
-      padding: padding,
+    final box = AnimatedContainer(
+      duration: const Duration(milliseconds: 60),
+      transform: _pressed
+          ? Matrix4.translationValues(2, 2, 0)
+          : Matrix4.identity(),
+      margin: widget.margin,
+      padding: widget.padding,
       decoration: BoxDecoration(
-        color: color ?? palette.surface,
-        boxShadow: palette.pixelBorder(highlightColor: highlightColor),
+        color: widget.color ?? palette.surface,
+        borderRadius: AppRadius.rCard,
+        border: Border.all(
+          color: widget.highlightColor ?? palette.border,
+          width: widget.highlightColor != null ? 2 : 1.5,
+        ),
+        boxShadow: palette.softShadow(),
       ),
-      child: child,
+      child: widget.child,
     );
-    if (onTap == null) return box;
-    return GestureDetector(onTap: onTap, child: box);
+    if (widget.onTap == null) return box;
+    // onTap (not onTapUp) fires the callback so GestureDetector exposes a
+    // semantic tap action to screen readers.
+    return Semantics(
+      container: true,
+      button: true,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: box,
+      ),
+    );
   }
 }

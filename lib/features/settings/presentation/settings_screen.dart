@@ -55,6 +55,15 @@ class SettingsScreen extends ConsumerWidget {
                     ref.read(settingsProvider.notifier).toggleCategory(type),
               ),
             const Divider(),
+            const _SectionLabel('Appearance'),
+            SwitchListTile(
+              title: const Text('Dark mode'),
+              subtitle: const Text('Turn off for the light parchment theme'),
+              value: s.darkMode,
+              onChanged: (on) =>
+                  ref.read(settingsProvider.notifier).setDarkMode(on),
+            ),
+            const Divider(),
             const _SectionLabel('Location & walking'),
             SwitchListTile(
               title: const Text('Walking mode'),

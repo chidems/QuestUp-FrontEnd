@@ -12,14 +12,21 @@ final photoApiProvider =
 
 /// Drives one quest's completion flow. `null` data means "not submitted yet";
 /// loading means uploading/completing; data with a result means success.
-class QuestCompletionNotifier
-    extends AutoDisposeFamilyAsyncNotifier<QuestCompletionResult?, String> {
+///
+/// Riverpod 3 family notifiers receive their argument via the constructor
+/// (the family create fn is `NotifierT Function(Arg)`), so the quest id is
+/// captured here rather than read from a `build(arg)` parameter.
+class QuestCompletionNotifier extends AsyncNotifier<QuestCompletionResult?> {
+  QuestCompletionNotifier(this._questId);
+
+  final String _questId;
+
   /// URL of the photo uploaded during [submit], so the weekly share step can
   /// reuse it instead of uploading again. Null if the quest had no photo.
   String? uploadedPhotoUrl;
 
   @override
-  Future<QuestCompletionResult?> build(String questId) async => null;
+  Future<QuestCompletionResult?> build() async => null;
 
   Future<void> submit({XFile? photo}) async {
     state = const AsyncLoading();
@@ -34,7 +41,7 @@ class QuestCompletionNotifier
 
       final result = await ref
           .read(questRepositoryProvider)
-          .completeQuest(arg, photoUrl: photoUrl);
+          .completeQuest(_questId, photoUrl: photoUrl);
 
       // Reflect the new XP/coins/quest list across the app.
       ref.invalidate(questFeedProvider);

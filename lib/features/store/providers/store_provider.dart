@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../avatar/models/avatar_models.dart';
-import '../../avatar/providers/avatar_provider.dart';
 import '../data/store_api.dart';
 import '../data/store_repository.dart';
 
@@ -27,9 +26,8 @@ class StoreNotifier extends AsyncNotifier<List<AvatarItem>> {
 
   Future<void> buy(String itemId) async {
     await ref.read(storeRepositoryProvider).buy(itemId);
-    // Reflect the purchase: store flags, owned inventory, and coin balance.
+    // Reflect the purchase: owned flags and coin balance.
     await refresh();
-    ref.invalidate(avatarProvider);
     await ref.read(authStateProvider.notifier).refreshUser();
   }
 }

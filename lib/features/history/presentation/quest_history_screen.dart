@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../shared/widgets/category_icon.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -59,6 +60,7 @@ class _HistoryRow extends StatelessWidget {
         children: [
           item.photoUrl != null && item.photoUrl!.isNotEmpty
               ? ClipRRect(
+                  borderRadius: AppRadius.rSmall,
                   child: CachedNetworkImage(
                     imageUrl: item.photoUrl!,
                     width: 44,

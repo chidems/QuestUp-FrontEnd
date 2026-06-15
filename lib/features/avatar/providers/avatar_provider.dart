@@ -1,37 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/network/dio_client.dart';
-import '../data/avatar_api.dart';
 import '../data/avatar_repository.dart';
 import '../models/avatar_models.dart';
 
-final avatarApiProvider =
-    Provider<AvatarApi>((ref) => AvatarApi(ref.read(dioClientProvider)));
+final avatarRepositoryProvider =
+    Provider<AvatarRepository>((ref) => AvatarRepository());
 
-final avatarRepositoryProvider = Provider<AvatarRepository>(
-  (ref) => AvatarRepository(ref.read(avatarApiProvider)),
-);
-
-class AvatarNotifier extends AsyncNotifier<AvatarData> {
+/// The user's current avatar look, persisted locally.
+class AppearanceNotifier extends AsyncNotifier<AvatarAppearance> {
   @override
-  Future<AvatarData> build() => _load();
+  Future<AvatarAppearance> build() =>
+      ref.read(avatarRepositoryProvider).getAppearance();
 
-  Future<AvatarData> _load() async {
-    final repo = ref.read(avatarRepositoryProvider);
-    final (avatar, inventory) =
-        await (repo.getAvatar(), repo.getInventory()).wait;
-    return AvatarData(avatar: avatar, inventory: inventory);
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(_load);
-  }
-
-  Future<void> equip(String itemId) async {
-    await ref.read(avatarRepositoryProvider).equip(itemId);
-    await refresh();
+  Future<void> apply(AvatarAppearance next) async {
+    await ref.read(avatarRepositoryProvider).saveAppearance(next);
+    state = AsyncData(next);
   }
 }
 
-final avatarProvider =
-    AsyncNotifierProvider<AvatarNotifier, AvatarData>(AvatarNotifier.new);
+final appearanceProvider =
+    AsyncNotifierProvider<AppearanceNotifier, AvatarAppearance>(
+  AppearanceNotifier.new,
+);

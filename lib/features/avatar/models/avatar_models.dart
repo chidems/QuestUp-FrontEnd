@@ -1,38 +1,18 @@
+import 'dart:convert';
+
 class ItemType {
-  static const String hat = 'hat';
   static const String top = 'top';
   static const String bottom = 'bottom';
-  static const String shoes = 'shoes';
-  static const String weapon = 'weapon';
-  static const String accessory = 'accessory';
-  static const String background = 'background';
 
-  /// Back-to-front order used when layering equipped items in the preview.
-  static const List<String> layerOrder = [
-    background,
-    bottom,
-    top,
-    shoes,
-    weapon,
-    hat,
-    accessory,
-  ];
-
-  /// Filter / grouping order shown in UI.
-  static const List<String> all = [
-    hat,
-    top,
-    bottom,
-    shoes,
-    weapon,
-    accessory,
-    background,
-  ];
+  /// Held props sold in the shop (weapons, plushies, instruments...).
+  static const String item = 'item';
 
   static String label(String type) =>
       type.isEmpty ? type : '${type[0].toUpperCase()}${type.substring(1)}';
 }
 
+/// A purchasable shop item (held prop). `asset` is the bundled sprite path in
+/// mock mode; `imageUrl` is used when a real backend serves art instead.
 class AvatarItem {
   final String id;
   final String name;
@@ -41,6 +21,7 @@ class AvatarItem {
   final String rarity;
   final int priceCoins;
   final String? imageUrl;
+  final String? asset;
   final bool isOwned;
   final bool isEquipped;
 
@@ -52,15 +33,29 @@ class AvatarItem {
     required this.rarity,
     required this.priceCoins,
     this.imageUrl,
+    this.asset,
     this.isOwned = false,
     this.isEquipped = false,
   });
+
+  AvatarItem copyWith({bool? isOwned, bool? isEquipped}) => AvatarItem(
+        id: id,
+        name: name,
+        description: description,
+        itemType: itemType,
+        rarity: rarity,
+        priceCoins: priceCoins,
+        imageUrl: imageUrl,
+        asset: asset,
+        isOwned: isOwned ?? this.isOwned,
+        isEquipped: isEquipped ?? this.isEquipped,
+      );
 
   factory AvatarItem.fromJson(Map<String, dynamic> json) => AvatarItem(
         id: json['id']?.toString() ?? '',
         name: json['name'] as String? ?? '',
         description: json['description'] as String?,
-        itemType: json['item_type'] as String? ?? 'accessory',
+        itemType: json['item_type'] as String? ?? ItemType.item,
         rarity: json['rarity'] as String? ?? 'common',
         priceCoins: (json['price_coins'] as num?)?.toInt() ?? 0,
         imageUrl: json['image_url'] as String?,
@@ -69,28 +64,76 @@ class AvatarItem {
       );
 }
 
-/// The user's currently equipped look.
-class Avatar {
-  final List<AvatarItem> equipped;
+const _unset = Object();
 
-  const Avatar({required this.equipped});
+/// The user's avatar look: free identity layers (skin/eyes/hair/clothes) plus
+/// one equipped held item. Ids reference asset_catalog.g.dart entries.
+class AvatarAppearance {
+  final String skinId;
+  final String eyesId;
+  final String hairId;
+  final String? topId;
+  final String? bottomId;
+  final String? itemId;
 
-  factory Avatar.fromJson(Map<String, dynamic> json) {
-    final items = (json['equipped'] as List<dynamic>?) ??
-        (json['items'] as List<dynamic>?) ??
-        const [];
-    return Avatar(
-      equipped: items
-          .map((e) => AvatarItem.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  const AvatarAppearance({
+    required this.skinId,
+    required this.eyesId,
+    required this.hairId,
+    this.topId,
+    this.bottomId,
+    this.itemId,
+  });
+
+  /// Starter look for new players.
+  static const defaults = AvatarAppearance(
+    skinId: 'skin_light',
+    eyesId: 'eyes_brown',
+    hairId: 'hair_001',
+    topId: 'rpg_neutral_top_tops_common_001',
+    bottomId: 'modern_masculine_bottom_bottoms_common_001',
+  );
+
+  /// copyWith where passing `null` explicitly clears an optional slot.
+  AvatarAppearance copyWith({
+    String? skinId,
+    String? eyesId,
+    String? hairId,
+    Object? topId = _unset,
+    Object? bottomId = _unset,
+    Object? itemId = _unset,
+  }) =>
+      AvatarAppearance(
+        skinId: skinId ?? this.skinId,
+        eyesId: eyesId ?? this.eyesId,
+        hairId: hairId ?? this.hairId,
+        topId: topId == _unset ? this.topId : topId as String?,
+        bottomId: bottomId == _unset ? this.bottomId : bottomId as String?,
+        itemId: itemId == _unset ? this.itemId : itemId as String?,
+      );
+
+  String encode() => jsonEncode({
+        'skin': skinId,
+        'eyes': eyesId,
+        'hair': hairId,
+        'top': topId,
+        'bottom': bottomId,
+        'item': itemId,
+      });
+
+  factory AvatarAppearance.decode(String source) {
+    final json = jsonDecode(source) as Map<String, dynamic>;
+    return AvatarAppearance(
+      skinId: json['skin'] as String? ?? defaults.skinId,
+      eyesId: json['eyes'] as String? ?? defaults.eyesId,
+      hairId: json['hair'] as String? ?? defaults.hairId,
+      topId: json['top'] as String?,
+      bottomId: json['bottom'] as String?,
+      // Falls back to the old two-hand keys for avatars saved before the
+      // single-item change.
+      itemId: json['item'] as String? ??
+          json['right_item'] as String? ??
+          json['left_item'] as String?,
     );
   }
-}
-
-/// Combined payload for the avatar screen: equipped look + owned inventory.
-class AvatarData {
-  final Avatar avatar;
-  final List<AvatarItem> inventory;
-
-  const AvatarData({required this.avatar, required this.inventory});
 }

@@ -1,8 +1,71 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/quest_constants.dart';
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_radius.dart';
+import 'pixel_glyph.dart';
 
-/// Square pixel badge showing a quest category's icon and accent color.
+/// Hand-drawn 12x12 pixel sprites per quest category ('X' = filled cell).
+const _pinGlyph = [
+  '...XXXXXX...',
+  '..XXXXXXXX..',
+  '.XXXXXXXXXX.',
+  '.XXX....XXX.',
+  '.XXX....XXX.',
+  '.XXXXXXXXXX.',
+  '..XXXXXXXX..',
+  '...XXXXXX...',
+  '....XXXX....',
+  '.....XX.....',
+  '.....XX.....',
+  '............',
+];
+
+const _socialGlyph = [
+  '............',
+  '..XX....XX..',
+  '.XXXX..XXXX.',
+  '.XXXX..XXXX.',
+  '..XX....XX..',
+  '............',
+  '.XXXX..XXXX.',
+  '.XXXX..XXXX.',
+  '.XXXX..XXXX.',
+  '.XXXX..XXXX.',
+  '............',
+  '............',
+];
+
+const _boltGlyph = [
+  '......XXXX..',
+  '.....XXXX...',
+  '....XXXX....',
+  '...XXXXXXX..',
+  '..XXXXXXX...',
+  '.....XXX....',
+  '....XXX.....',
+  '...XXX......',
+  '..XX........',
+  '.XX.........',
+  '............',
+  '............',
+];
+
+const _flagGlyph = [
+  '............',
+  '..X.........',
+  '..XXXXXXXXX.',
+  '..XXXXXXXXX.',
+  '..XXXXXXX...',
+  '..X.........',
+  '..X.........',
+  '..X.........',
+  '..X.........',
+  '..X.........',
+  '............',
+  '............',
+];
+
+/// Square pixel badge showing a quest category's sprite and accent color.
 class CategoryIcon extends StatelessWidget {
   final String questType;
   final double size;
@@ -18,9 +81,10 @@ class CategoryIcon extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.2),
+        borderRadius: AppRadius.rSmall,
         border: Border.all(color: color, width: 1.5),
       ),
-      child: Icon(_icon, color: color, size: size * 0.5),
+      child: Center(child: PixelGlyph(_glyph, color: color, size: size * 0.55)),
     );
   }
 
@@ -37,16 +101,16 @@ class CategoryIcon extends StatelessWidget {
     }
   }
 
-  IconData get _icon {
+  List<String> get _glyph {
     switch (questType) {
       case QuestType.location:
-        return Icons.place;
+        return _pinGlyph;
       case QuestType.social:
-        return Icons.groups;
+        return _socialGlyph;
       case QuestType.action:
-        return Icons.bolt;
+        return _boltGlyph;
       default:
-        return Icons.flag;
+        return _flagGlyph;
     }
   }
 }

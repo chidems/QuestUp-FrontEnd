@@ -19,11 +19,11 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Stats'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -78,15 +78,15 @@ class _Header extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final avatar = ref.watch(avatarProvider).valueOrNull?.avatar ??
-        const Avatar(equipped: []);
+    final appearance = ref.watch(appearanceProvider).value ??
+        AvatarAppearance.defaults;
     final progress = (user.totalXp % 100) / 100;
 
     return Column(
       children: [
         SizedBox(
           width: 160,
-          child: AvatarPreview(avatar: avatar),
+          child: AvatarPreview(appearance: appearance),
         ),
         const SizedBox(height: 12),
         Text(

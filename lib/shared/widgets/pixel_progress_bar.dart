@@ -39,8 +39,15 @@ class PixelProgressBar extends StatelessWidget {
       ),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: FractionallySizedBox(
-          widthFactor: value.clamp(0.0, 1.0),
+        // Fill animates in on first build and eases to any new value.
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(end: value.clamp(0.0, 1.0)),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+          builder: (_, animatedValue, child) => FractionallySizedBox(
+            widthFactor: animatedValue,
+            child: child,
+          ),
           child: Stack(
             children: [
               Positioned.fill(child: ColoredBox(color: fill)),

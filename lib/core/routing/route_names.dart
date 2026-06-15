@@ -7,6 +7,7 @@ class RouteNames {
   static const String questComplete = '/quests/:id/complete';
   static const String weekly = '/weekly';
   static const String avatar = '/avatar';
+  static const String customize = '/avatar/customize';
   static const String store = '/store';
   static const String profile = '/profile';
   static const String achievements = '/achievements';

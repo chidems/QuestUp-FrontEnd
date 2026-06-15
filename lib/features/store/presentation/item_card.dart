@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../shared/widgets/item_thumbnail.dart';
 import '../../../shared/widgets/pixel_box.dart';
+import '../../../shared/widgets/pixel_button.dart';
 import '../../../shared/widgets/rarity_badge.dart';
 import '../../avatar/models/avatar_models.dart';
 
@@ -9,14 +11,12 @@ class ItemCard extends StatelessWidget {
   final AvatarItem item;
   final bool canAfford;
   final VoidCallback onBuy;
-  final VoidCallback onEquip;
 
   const ItemCard({
     super.key,
     required this.item,
     required this.canAfford,
     required this.onBuy,
-    required this.onEquip,
   });
 
   @override
@@ -27,11 +27,21 @@ class ItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: ItemThumbnail(
-              imageUrl: item.imageUrl,
-              itemType: item.itemType,
-              size: 72,
+          // Inset backdrop plate so the art reads as a sprite slot.
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: context.colors.surfaceDeep,
+              borderRadius: AppRadius.rSmall,
+            ),
+            child: Center(
+              child: ItemThumbnail(
+                imageUrl: item.imageUrl,
+                asset: item.asset,
+                itemType: item.itemType,
+                size: 56,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -45,21 +55,9 @@ class ItemCard extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  ItemType.label(item.itemType),
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: context.colors.textMuted),
-                ),
-              ),
-              RarityBadge(rarity: item.rarity),
-            ],
-          ),
-          const SizedBox(height: 8),
+          RarityBadge(rarity: item.rarity),
+          // Pin the action to the card bottom — no stranded whitespace.
+          const Spacer(),
           _action(context),
         ],
       ),
@@ -71,28 +69,16 @@ class ItemCard extends StatelessWidget {
       return _StateButton(label: 'Equipped', color: context.colors.xpColor);
     }
     if (item.isOwned) {
-      return SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(onPressed: onEquip, child: const Text('Equip')),
-      );
+      // Equipping happens on the Hero screen's Items tab (left/right hand).
+      return _StateButton(label: 'Owned', color: context.colors.primaryLight);
     }
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: canAfford ? onBuy : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: context.colors.accent,
-          foregroundColor: Colors.black,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.monetization_on, size: 16),
-            const SizedBox(width: 4),
-            Text('${item.priceCoins}'),
-          ],
-        ),
-      ),
+    return PixelButton(
+      label: '${item.priceCoins}',
+      icon: Icons.monetization_on,
+      fullWidth: true,
+      color: context.colors.accent,
+      textColor: Colors.black,
+      onPressed: canAfford ? onBuy : null,
     );
   }
 }
@@ -111,6 +97,7 @@ class _StateButton extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.2),
+        borderRadius: AppRadius.rButton,
         border: Border.all(color: color),
       ),
       child: Text(

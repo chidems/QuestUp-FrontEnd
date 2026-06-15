@@ -74,25 +74,28 @@ class AppPalette extends ThemeExtension<AppPalette> {
   });
 
   static const dark = AppPalette(
-    background: Color(0xFF2A2D4A),
-    surface: Color(0xFF353868),
-    surfaceVariant: Color(0xFF3E4170),
-    surfaceDeep: Color(0xFF1E2040),
-    border: Color(0xFF4A4E88),
-    borderDeep: Color(0xFF1A1C38),
-    borderDeeper: Color(0xFF10122A),
-    primary: Color(0xFF8868C8),
+    // Deeper background with clearer value steps between surfaces; gold is
+    // reserved for currency/rewards (accent), not general headings.
+    background: Color(0xFF1E2138),
+    surface: Color(0xFF2E3354),
+    surfaceVariant: Color(0xFF383E66),
+    surfaceDeep: Color(0xFF16182C),
+    border: Color(0xFF454B7E),
+    borderDeep: Color(0xFF131527),
+    borderDeeper: Color(0xFF0C0E1E),
+    primary: Color(0xFF9B7BD8),
     primaryLight: Color(0xFFC8A8F0),
     accent: Color(0xFFF0A830),
     accentTeal: Color(0xFF20D4BE),
     accentPurple: Color(0xFFC8A8F0),
     xpColor: Color(0xFF20D4BE),
     error: Color(0xFFD85050),
-    textPrimary: Color(0xFFF0D98A),
+    textPrimary: Color(0xFFECE6F2),
     textSecondary: Color(0xFFB8BCE0),
     textBody: Color(0xFFB8BCE0),
-    textMuted: Color(0xFF9090B8),
-    buttonText: Color(0xFFE8E4D8),
+    // ≥4.5:1 (WCAG AA) on surface and surfaceVariant.
+    textMuted: Color(0xFFACB0D2),
+    buttonText: Color(0xFFECE6F2),
     locationQuest: Color(0xFF4A90D9),
     socialQuest: Color(0xFFEC6FB0),
     actionQuest: Color(0xFFF0A830),
@@ -121,7 +124,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     textPrimary: Color(0xFF5A3E1B),
     textSecondary: Color(0xFF7A6A4A),
     textBody: Color(0xFF7A6A4A),
-    textMuted: Color(0xFF8A7A5A),
+    // ≥4.5:1 (WCAG AA) on surface and surfaceVariant.
+    textMuted: Color(0xFF665B43),
     buttonText: Color(0xFFE8E4D8),
     locationQuest: Color(0xFF2E7FD4),
     socialQuest: Color(0xFFC03888),
@@ -133,22 +137,15 @@ class AppPalette extends ThemeExtension<AppPalette> {
     rarityLegendary: Color(0xFFB8651A),
   );
 
-  /// The chunky pixel-art border: hard offset shadows on all sides with a
-  /// deeper bottom-right to suggest depth. Pass [highlightColor] to tint the
-  /// border (e.g. for featured cards).
-  List<BoxShadow> pixelBorder({Color? highlightColor, double size = 2}) {
-    final b = highlightColor ?? border;
-    return [
-      BoxShadow(color: b, offset: Offset(0, -size), blurRadius: 0),
-      BoxShadow(color: b, offset: Offset(0, size), blurRadius: 0),
-      BoxShadow(color: b, offset: Offset(-size, 0), blurRadius: 0),
-      BoxShadow(color: b, offset: Offset(size, 0), blurRadius: 0),
-      BoxShadow(color: borderDeeper, offset: Offset(size * 2, size * 2), blurRadius: 0),
-      BoxShadow(color: b, offset: Offset(size * 2, -size * 2), blurRadius: 0),
-      BoxShadow(color: borderDeep, offset: Offset(-size * 2, size * 2), blurRadius: 0),
-      BoxShadow(color: b, offset: Offset(-size * 2, -size * 2), blurRadius: 0),
-    ];
-  }
+  /// Soft drop shadow for rounded cards/panels — a subtle lift, not the old
+  /// chunky pixel border.
+  List<BoxShadow> softShadow() => [
+        BoxShadow(
+          color: borderDeeper.withValues(alpha: 0.45),
+          offset: const Offset(0, 2),
+          blurRadius: 6,
+        ),
+      ];
 
   @override
   AppPalette copyWith() => this;

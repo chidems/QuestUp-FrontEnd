@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
-import '../../quests/providers/quest_feed_provider.dart';
+import '../../quests/providers/accepted_npc_quests_provider.dart';
 import '../data/npc_api.dart';
 import '../models/npc_models.dart';
 
@@ -48,7 +48,12 @@ class NpcEncounterNotifier extends Notifier<NPCEncounter?> {
     final encounter = state;
     if (encounter == null) return;
     await ref.read(npcApiProvider).accept(encounter.id);
-    ref.invalidate(questFeedProvider); // NPC quest joins the active list
+    // Surface the accepted quest in the active feed (NPC quests aren't part of
+    // the regular feed payload).
+    final offer = encounter.questOffer;
+    if (offer != null) {
+      ref.read(acceptedNpcQuestsProvider.notifier).add(offer);
+    }
     state = null;
   }
 

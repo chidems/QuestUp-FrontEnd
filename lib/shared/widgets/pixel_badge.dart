@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_radius.dart';
 
 /// Inline label chip with a tinted fill + border, in the given accent [color].
 class PixelBadge extends StatelessWidget {
@@ -16,9 +17,10 @@ class PixelBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),
+        borderRadius: AppRadius.rSmall,
         border: Border.all(color: color.withValues(alpha: 0.55)),
       ),
       child: Row(

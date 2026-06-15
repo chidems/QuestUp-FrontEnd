@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../shared/widgets/pixel_button.dart';
 import '../../quests/models/quest_models.dart';
 import '../models/npc_models.dart';
 import '../providers/npc_encounter_provider.dart';
@@ -37,12 +39,16 @@ class _NpcEncounterModalState extends ConsumerState<NpcEncounterModal> {
     final offer = e.questOffer;
 
     return Dialog(
-      backgroundColor: context.colors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-        side: BorderSide(color: context.colors.primaryLight, width: 2),
-      ),
-      child: Padding(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.rCard),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          borderRadius: AppRadius.rCard,
+          border: Border.all(color: context.colors.primaryLight, width: 2),
+          boxShadow: context.colors.softShadow(),
+        ),
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -70,28 +76,26 @@ class _NpcEncounterModalState extends ConsumerState<NpcEncounterModal> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: PixelButton(
+                    label: 'Decline',
+                    fullWidth: true,
+                    variant: PixelButtonVariant.neutral,
                     onPressed: _busy
                         ? null
                         : () => _resolve(
                             ref.read(npcEncounterProvider.notifier).decline),
-                    child: const Text('Decline'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: PixelButton(
+                    label: 'Accept',
+                    fullWidth: true,
+                    isLoading: _busy,
                     onPressed: _busy
                         ? null
                         : () => _resolve(
                             ref.read(npcEncounterProvider.notifier).accept),
-                    child: _busy
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Accept'),
                   ),
                 ),
               ],
@@ -137,8 +141,8 @@ class _OfferCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.colors.surfaceVariant,
-        boxShadow:
-            context.colors.pixelBorder(highlightColor: context.colors.accent),
+        borderRadius: AppRadius.rSmall,
+        border: Border.all(color: context.colors.accent.withValues(alpha: 0.6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

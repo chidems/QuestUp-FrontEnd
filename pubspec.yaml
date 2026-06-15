@@ -11,14 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  flutter_riverpod: ^2.6.1
-  go_router: ^14.6.3
+  flutter_riverpod: ^3.3.2
+  go_router: ^17.3.0
   dio: ^5.8.0
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.3.1
   shared_preferences: ^2.3.3
-  geolocator: ^13.0.2
+  geolocator: ^14.0.3
   image_picker: ^1.1.2
-  permission_handler: ^11.4.0
+  permission_handler: ^12.0.3
   cached_network_image: ^3.4.1
 
 dev_dependencies:
@@ -28,3 +28,41 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Avatar + shop sprites. Leaf directories only, so the _qa_*.png review
+  # sheets at sprites/ root stay out of the bundle.
+  assets:
+    - sprites/avatars/skin_tones/
+    - sprites/eyes/
+    - sprites/hair/
+    - sprites/items/
+    - sprites/clothes/modern_feminine/tops/common/
+    - sprites/clothes/modern_feminine/tops/uncommon/
+    - sprites/clothes/modern_feminine/tops/rare_epic/
+    - sprites/clothes/modern_feminine/bottoms/common/
+    - sprites/clothes/modern_feminine/bottoms/uncommon/
+    - sprites/clothes/modern_feminine/bottoms/rare_epic/
+    - sprites/clothes/modern_masculine/tops/common/
+    - sprites/clothes/modern_masculine/tops/uncommon/
+    - sprites/clothes/modern_masculine/tops/rare_epic/
+    - sprites/clothes/modern_masculine/bottoms/common/
+    - sprites/clothes/modern_masculine/bottoms/uncommon/
+    - sprites/clothes/modern_masculine/bottoms/rare_epic/
+    - sprites/clothes/rpg_feminine/tops/common/
+    - sprites/clothes/rpg_feminine/tops/uncommon/
+    - sprites/clothes/rpg_feminine/tops/rare_epic/
+    - sprites/clothes/rpg_feminine/bottoms/common/
+    - sprites/clothes/rpg_feminine/bottoms/uncommon/
+    - sprites/clothes/rpg_feminine/bottoms/rare_epic/
+    - sprites/clothes/rpg_neutral/tops/common/
+    - sprites/clothes/rpg_neutral/tops/uncommon/
+    - sprites/clothes/rpg_neutral/tops/rare_epic/
+    - sprites/clothes/rpg_neutral/bottoms/common/
+    - sprites/clothes/rpg_neutral/bottoms/uncommon/
+    - sprites/clothes/rpg_neutral/bottoms/rare_epic/
+
+  # Bundled so demos work fully offline (no runtime font fetch).
+  fonts:
+    - family: PressStart2P
+      fonts:
+        - asset: assets/fonts/PressStart2P-Regular.ttf

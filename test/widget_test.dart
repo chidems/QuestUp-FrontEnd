@@ -9,12 +9,12 @@ import 'package:quest_up/features/store/presentation/item_card.dart';
 import 'package:quest_up/features/npc/models/npc_models.dart';
 import 'package:quest_up/features/achievements/models/achievement_models.dart';
 import 'package:quest_up/features/profile/models/profile_models.dart';
+import 'package:quest_up/shared/widgets/pixel_button.dart';
 
 ItemCard _itemCard(AvatarItem item, {bool canAfford = true}) => ItemCard(
       item: item,
       canAfford: canAfford,
       onBuy: () {},
-      onEquip: () {},
     );
 
 const _weeklyQuest = Quest(
@@ -118,7 +118,7 @@ void main() {
     const item = AvatarItem(
       id: 'i1',
       name: 'Oak Staff',
-      itemType: ItemType.weapon,
+      itemType: ItemType.item,
       rarity: 'epic',
       priceCoins: 250,
     );
@@ -135,7 +135,7 @@ void main() {
     const item = AvatarItem(
       id: 'i2',
       name: 'Wizard Hat',
-      itemType: ItemType.hat,
+      itemType: ItemType.item,
       rarity: 'rare',
       priceCoins: 120,
       isOwned: true,
@@ -148,12 +148,12 @@ void main() {
     expect(find.text('120'), findsNothing);
   });
 
-  testWidgets('ItemCard shows Equip for owned-but-unequipped item',
+  testWidgets('ItemCard shows Owned for owned-but-unequipped item',
       (tester) async {
     const item = AvatarItem(
       id: 'i3',
-      name: 'Adventurer Pants',
-      itemType: ItemType.bottom,
+      name: 'Teddy Bear',
+      itemType: ItemType.item,
       rarity: 'common',
       priceCoins: 30,
       isOwned: true,
@@ -161,21 +161,22 @@ void main() {
 
     await tester.pumpWidget(_wrap(_itemCard(item)));
 
-    expect(find.text('Equip'), findsOneWidget);
+    expect(find.text('Owned'), findsOneWidget);
+    expect(find.text('30'), findsNothing);
   });
 
   testWidgets('ItemCard disables Buy when unaffordable', (tester) async {
     const item = AvatarItem(
       id: 'i4',
       name: 'Golden Crown',
-      itemType: ItemType.hat,
+      itemType: ItemType.item,
       rarity: 'legendary',
       priceCoins: 500,
     );
 
     await tester.pumpWidget(_wrap(_itemCard(item, canAfford: false)));
 
-    final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+    final button = tester.widget<PixelButton>(find.byType(PixelButton));
     expect(button.onPressed, isNull);
   });
 

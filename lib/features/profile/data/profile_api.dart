@@ -15,7 +15,6 @@ class ProfileApi {
         'creativity': 5,
         'exploration': 12,
         'knowledge': 3,
-        'fitness': 6,
       });
     }
     try {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../shared/widgets/pixel_button.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -59,12 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Text(
                   'Quest Up',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: context.colors.textPrimary,
-                    letterSpacing: 2,
-                  ),
+                  style: Theme.of(context).textTheme.displayLarge,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -100,18 +96,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       (v != null && v.length >= 6) ? null : 'Min 6 characters',
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
+                PixelButton(
+                  label: 'Login',
+                  fullWidth: true,
+                  isLoading: authState.isLoading,
                   onPressed: authState.isLoading ? null : _submit,
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text('Login'),
                 ),
                 const SizedBox(height: 12),
                 TextButton(

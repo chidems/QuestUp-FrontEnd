@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/storage/mock_economy.dart';
 import '../models/auth_models.dart';
 
 class AuthApi {
@@ -44,7 +45,8 @@ class AuthApi {
 
   // --- Mock helpers ---
 
-  AuthResponse _mockAuthResponse(String email, String displayName) =>
+  Future<AuthResponse> _mockAuthResponse(
+          String email, String displayName) async =>
       AuthResponse(
         accessToken: 'mock_access_token',
         refreshToken: 'mock_refresh_token',
@@ -54,20 +56,24 @@ class AuthApi {
           displayName: displayName,
           level: 3,
           totalXp: 450,
-          coins: 350,
+          coins: await _mockCoins(),
           currentStreak: 5,
           longestStreak: 12,
         ),
       );
 
-  User _mockUser() => const User(
+  Future<User> _mockUser() async => User(
         id: '1',
         email: 'hero@questup.app',
         displayName: 'Hero',
         level: 3,
         totalXp: 450,
-        coins: 350,
+        coins: await _mockCoins(),
         currentStreak: 5,
         longestStreak: 12,
       );
+
+  /// Shop purchases persist in mock mode, so the balance reflects them.
+  Future<int> _mockCoins() async =>
+      MockEconomy.baseCoins - await MockEconomy.coinsSpent();
 }

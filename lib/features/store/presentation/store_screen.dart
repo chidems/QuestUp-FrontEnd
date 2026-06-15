@@ -4,6 +4,7 @@ import '../../../core/theme/app_palette.dart';
 import '../../../core/constants/quest_constants.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/pixel_chip.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../avatar/models/avatar_models.dart';
 import '../../avatar/providers/avatar_provider.dart';
@@ -26,7 +27,6 @@ class StoreScreen extends ConsumerStatefulWidget {
 }
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
-  String? _type;
   String? _rarity;
 
   Future<void> _buy(AvatarItem item) async {
@@ -41,23 +41,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
   }
 
-  Future<void> _equip(AvatarItem item) async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await ref.read(avatarProvider.notifier).equip(item.id);
-      ref.invalidate(storeProvider);
-      messenger.showSnackBar(
-        SnackBar(content: Text('Equipped ${item.name}.')),
-      );
-    } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Could not equip: $e')));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final store = ref.watch(storeProvider);
-    final coins = ref.watch(authStateProvider).valueOrNull?.coins ?? 0;
+    final coins = ref.watch(authStateProvider).value?.coins ?? 0;
+    final appearance = ref.watch(appearanceProvider).value;
+    final equippedIds = {appearance?.itemId};
 
     return Scaffold(
       appBar: AppBar(
@@ -84,11 +73,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
       body: Column(
         children: [
-          _Filters(
-            type: _type,
+          _RarityChips(
             rarity: _rarity,
-            onType: (t) => setState(() => _type = t),
-            onRarity: (r) => setState(() => _rarity = r),
+            onSelect: (r) => setState(() => _rarity = r),
           ),
           Expanded(
             child: store.when(
@@ -99,9 +86,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               ),
               data: (items) {
                 final filtered = items
-                    .where((i) =>
-                        (_type == null || i.itemType == _type) &&
-                        (_rarity == null || i.rarity == _rarity))
+                    .where((i) => _rarity == null || i.rarity == _rarity)
                     .toList();
 
                 if (filtered.isEmpty) {
@@ -117,16 +102,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: 0.72,
+                      childAspectRatio: 0.80,
                     ),
                     itemCount: filtered.length,
                     itemBuilder: (_, i) {
-                      final item = filtered[i];
+                      var item = filtered[i];
+                      if (equippedIds.contains(item.id)) {
+                        item = item.copyWith(isEquipped: true);
+                      }
                       return ItemCard(
                         item: item,
                         canAfford: coins >= item.priceCoins,
                         onBuy: () => _buy(item),
-                        onEquip: () => _equip(item),
                       );
                     },
                   ),
@@ -140,73 +127,37 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 }
 
-class _Filters extends StatelessWidget {
-  final String? type;
+class _RarityChips extends StatelessWidget {
   final String? rarity;
-  final ValueChanged<String?> onType;
-  final ValueChanged<String?> onRarity;
-
-  const _Filters({
-    required this.type,
-    required this.rarity,
-    required this.onType,
-    required this.onRarity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _ChipRow(
-          values: ItemType.all,
-          selected: type,
-          onSelect: onType,
-        ),
-        _ChipRow(
-          values: _rarities,
-          selected: rarity,
-          onSelect: onRarity,
-        ),
-      ],
-    );
-  }
-}
-
-class _ChipRow extends StatelessWidget {
-  final List<String> values;
-  final String? selected;
   final ValueChanged<String?> onSelect;
 
-  const _ChipRow({
-    required this.values,
-    required this.selected,
-    required this.onSelect,
-  });
+  const _RarityChips({required this.rarity, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 48,
+      height: 38,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
-          _chip(context, label: 'All', value: null),
-          for (final v in values)
-            _chip(context, label: ItemType.label(v), value: v),
+          for (final entry in [
+            const MapEntry<String?, String>(null, 'All'),
+            for (final r in _rarities) MapEntry<String?, String>(r, r),
+          ])
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: Center(
+                child: PixelChip(
+                  label: entry.key == null
+                      ? entry.value
+                      : ItemType.label(entry.value),
+                  selected: rarity == entry.key,
+                  onTap: () => onSelect(entry.key),
+                ),
+              ),
+            ),
         ],
-      ),
-    );
-  }
-
-  Widget _chip(BuildContext context,
-      {required String label, required String? value}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected == value,
-        onSelected: (_) => onSelect(value),
       ),
     );
   }

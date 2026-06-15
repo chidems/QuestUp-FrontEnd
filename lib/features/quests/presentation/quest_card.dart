@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/category_icon.dart';
+import '../../../shared/widgets/pixel_badge.dart';
 import '../../../shared/widgets/pixel_box.dart';
 import '../models/quest_models.dart';
 
@@ -20,11 +21,16 @@ class QuestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.colors;
+    final isNpc = quest.source == 'npc';
     return PixelBox(
       onTap: onTap,
       padding: const EdgeInsets.all(14),
-      color: featured ? p.surfaceVariant : p.surface,
-      highlightColor: featured ? p.accent : null,
+      color: featured
+          ? p.surfaceVariant
+          : (isNpc ? p.accentPurple.withValues(alpha: 0.08) : p.surface),
+      highlightColor: featured
+          ? p.accent
+          : (isNpc ? p.accentPurple : null),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,6 +40,14 @@ class QuestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (isNpc) ...[
+                  PixelBadge(
+                    label: 'NPC QUEST',
+                    color: p.accentPurple,
+                    icon: Icons.person,
+                  ),
+                  const SizedBox(height: 6),
+                ],
                 Text(
                   quest.title,
                   style: Theme.of(context)

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -99,7 +100,7 @@ class _QuestCompletionScreenState
           if (result == null) return;
           await showRewardSummary(context, result);
           if (!context.mounted) return;
-          final quest = ref.read(questDetailProvider(widget.questId)).valueOrNull;
+          final quest = ref.read(questDetailProvider(widget.questId)).value;
           if (quest != null && quest.isWeekly) {
             await _maybeShareWeekly(quest);
             if (!context.mounted) return;
@@ -128,6 +129,7 @@ class _QuestCompletionScreenState
           isSubmitting: completion.isLoading,
           onPickCamera: () => _pick(ImageSource.camera),
           onPickGallery: () => _pick(ImageSource.gallery),
+          onClearPhoto: () => setState(() => _photo = null),
           onSubmit: _submit,
         ),
       ),
@@ -141,6 +143,7 @@ class _Body extends StatelessWidget {
   final bool isSubmitting;
   final VoidCallback onPickCamera;
   final VoidCallback onPickGallery;
+  final VoidCallback onClearPhoto;
   final VoidCallback onSubmit;
 
   const _Body({
@@ -149,13 +152,12 @@ class _Body extends StatelessWidget {
     required this.isSubmitting,
     required this.onPickCamera,
     required this.onPickGallery,
+    required this.onClearPhoto,
     required this.onSubmit,
   });
 
   @override
   Widget build(BuildContext context) {
-    final photoMissing = quest.requiresPhoto && photo == null;
-
     return Column(
       children: [
         Expanded(
@@ -170,41 +172,60 @@ class _Body extends StatelessWidget {
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              if (quest.requiresPhoto) ...[
-                Text(
-                  'Add a photo',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
+              // A photo is always optional — add one to show off your quest
+              // (and, for weekly quests, optionally share it afterwards).
+              Row(
+                children: [
+                  Text(
+                    'Add a photo',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'optional',
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelSmall
+                        ?.copyWith(color: context.colors.textMuted),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _PhotoArea(photo: photo),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: isSubmitting ? null : onPickCamera,
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Camera'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: isSubmitting ? null : onPickGallery,
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Gallery'),
+                    ),
+                  ),
+                ],
+              ),
+              if (photo != null) ...[
                 const SizedBox(height: 8),
-                _PhotoArea(photo: photo),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: isSubmitting ? null : onPickCamera,
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Camera'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: isSubmitting ? null : onPickGallery,
-                        icon: const Icon(Icons.photo_library),
-                        label: const Text('Gallery'),
-                      ),
-                    ),
-                  ],
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: isSubmitting ? null : onClearPhoto,
+                    icon: const Icon(Icons.close, size: 16),
+                    label: const Text('Remove photo'),
+                  ),
                 ),
-              ] else
-                Text(
-                  'Ready to mark this quest as complete?',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+              ],
             ],
           ),
         ),
@@ -212,29 +233,13 @@ class _Body extends StatelessWidget {
           top: false,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (photoMissing)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      'A photo is required to complete this quest.',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: context.colors.textMuted),
-                    ),
-                  ),
-                SizedBox(
-                  width: double.infinity,
-                  child: PixelButton(
-                    label: 'Submit',
-                    isLoading: isSubmitting,
-                    onPressed: photoMissing ? null : onSubmit,
-                  ),
-                ),
-              ],
+            child: SizedBox(
+              width: double.infinity,
+              child: PixelButton(
+                label: photo == null ? 'Complete' : 'Complete with photo',
+                isLoading: isSubmitting,
+                onPressed: onSubmit,
+              ),
             ),
           ),
         ),
@@ -254,9 +259,10 @@ class _PhotoArea extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: context.colors.surface,
+          borderRadius: AppRadius.rCard,
           border: Border.all(color: context.colors.primaryLight),
         ),
-        clipBehavior: Clip.hardEdge,
+        clipBehavior: Clip.antiAlias,
         child: photo == null
             ? Center(
                 child: Icon(

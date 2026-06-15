@@ -1,6 +1,6 @@
 class LifeStats {
-  /// stat name -> points (e.g. social, creativity, exploration, knowledge,
-  /// fitness). Kept as a map so the backend can evolve the set of stats.
+  /// stat name -> points (e.g. social, creativity, exploration, knowledge).
+  /// Kept as a map so the backend can evolve the set of stats.
   final Map<String, int> values;
 
   const LifeStats(this.values);
@@ -11,7 +11,6 @@ class LifeStats {
     'creativity',
     'exploration',
     'knowledge',
-    'fitness',
   ];
 
   factory LifeStats.fromJson(Map<String, dynamic> json) {

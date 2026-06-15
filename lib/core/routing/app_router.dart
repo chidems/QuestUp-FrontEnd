@@ -8,7 +8,8 @@ import '../../features/quests/presentation/quest_feed_screen.dart';
 import '../../features/quests/presentation/quest_detail_screen.dart';
 import '../../features/quests/presentation/quest_completion_screen.dart';
 import '../../features/weekly/presentation/weekly_quest_screen.dart';
-import '../../features/avatar/presentation/avatar_screen.dart';
+import '../../features/avatar/presentation/hero_screen.dart';
+import '../../features/avatar/presentation/customize_screen.dart';
 import '../../features/store/presentation/store_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/achievements/presentation/achievements_screen.dart';
@@ -16,6 +17,28 @@ import '../../features/history/presentation/quest_history_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import 'route_names.dart';
+
+/// Fade + slight upward slide for pushed screens (pixel-friendly: no
+/// platform-default zoom).
+CustomTransitionPage<void> _fadeThrough(GoRouterState state, Widget child) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (_, animation, _, child) {
+      final curved =
+          CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween(begin: const Offset(0, 0.03), end: Offset.zero)
+              .animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   // Use a ChangeNotifier so GoRouter re-evaluates redirects on auth changes
@@ -34,7 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Still initialising — don't redirect yet.
       if (authValue.isLoading) return null;
 
-      final isLoggedIn = authValue.valueOrNull != null;
+      final isLoggedIn = authValue.value != null;
       final onAuthScreen = state.matchedLocation == RouteNames.login ||
           state.matchedLocation == RouteNames.register;
 
@@ -53,29 +76,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.questDetail,
-        builder: (_, state) =>
-            QuestDetailScreen(questId: state.pathParameters['id']!),
+        pageBuilder: (_, state) => _fadeThrough(
+            state, QuestDetailScreen(questId: state.pathParameters['id']!)),
       ),
       GoRoute(
         path: RouteNames.questComplete,
-        builder: (_, state) =>
-            QuestCompletionScreen(questId: state.pathParameters['id']!),
+        pageBuilder: (_, state) => _fadeThrough(
+            state, QuestCompletionScreen(questId: state.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: RouteNames.customize,
+        pageBuilder: (_, state) => _fadeThrough(state, const CustomizeScreen()),
       ),
       GoRoute(
         path: RouteNames.store,
-        builder: (_, __) => const StoreScreen(),
+        pageBuilder: (_, state) => _fadeThrough(state, const StoreScreen()),
       ),
       GoRoute(
         path: RouteNames.achievements,
-        builder: (_, __) => const AchievementsScreen(),
+        pageBuilder: (_, state) =>
+            _fadeThrough(state, const AchievementsScreen()),
       ),
       GoRoute(
         path: RouteNames.history,
-        builder: (_, __) => const QuestHistoryScreen(),
+        pageBuilder: (_, state) =>
+            _fadeThrough(state, const QuestHistoryScreen()),
       ),
       GoRoute(
         path: RouteNames.settings,
-        builder: (_, __) => const SettingsScreen(),
+        pageBuilder: (_, state) => _fadeThrough(state, const SettingsScreen()),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppScaffold(shell: shell),
@@ -95,7 +124,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: RouteNames.avatar,
-              builder: (_, __) => const AvatarScreen(),
+              builder: (_, __) => const HeroScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [
