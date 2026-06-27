@@ -52,7 +52,7 @@ class StoreApi {
       return;
     }
     try {
-      await _dio.post('/store/items/$itemId/buy');
+      await _dio.post('/store/items/$itemId/purchase');
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }

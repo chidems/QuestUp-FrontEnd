@@ -22,6 +22,21 @@ class AchievementsApi {
     }
   }
 
+  /// Per-user unlock progress, merged onto the definitions by the repository.
+  Future<List<AchievementProgress>> getProgress() async {
+    if (AppConfig.useMockApi) return const [];
+    try {
+      final response = await _dio.get('/achievements/progress');
+      final data = response.data;
+      final list = data is List ? data : (data['progress'] as List? ?? []);
+      return list
+          .map((e) => AchievementProgress.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
   List<Achievement> _mock() => [
         Achievement(
           id: 'a1',

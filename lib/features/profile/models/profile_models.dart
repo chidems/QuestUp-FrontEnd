@@ -11,12 +11,18 @@ class LifeStats {
     'creativity',
     'exploration',
     'knowledge',
+    'fitness',
   ];
 
+  /// GET /profile/stats returns flat `*_xp` keys, e.g.
+  /// { social_xp, creativity_xp, exploration_xp, knowledge_xp, fitness_xp }.
   factory LifeStats.fromJson(Map<String, dynamic> json) {
     final raw = (json['stats'] as Map<String, dynamic>?) ?? json;
     return LifeStats(
-      raw.map((k, v) => MapEntry(k, (v as num?)?.toInt() ?? 0)),
+      raw.map((k, v) {
+        final key = k.endsWith('_xp') ? k.substring(0, k.length - 3) : k;
+        return MapEntry(key, (v as num?)?.toInt() ?? 0);
+      }),
     );
   }
 

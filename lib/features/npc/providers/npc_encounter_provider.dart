@@ -13,31 +13,12 @@ class NpcEncounterNotifier extends Notifier<NPCEncounter?> {
   @override
   NPCEncounter? build() => null;
 
-  Future<void> sessionTick({
-    required double latitude,
-    required double longitude,
-    required int walkingSeconds,
-  }) async {
-    try {
-      await ref.read(npcApiProvider).sessionTick(
-            latitude: latitude,
-            longitude: longitude,
-            walkingSeconds: walkingSeconds,
-          );
-    } catch (_) {
-      // Best-effort context reporting; ignore failures.
-    }
-  }
-
-  Future<void> checkEncounter({
-    required double latitude,
-    required double longitude,
-  }) async {
+  /// Asks the backend whether an NPC spawns now. The walking session reports
+  /// location via /walking/session/update before calling this.
+  Future<void> checkSpawn() async {
     if (state != null) return; // an encounter is already showing
     try {
-      final encounter = await ref
-          .read(npcApiProvider)
-          .checkEncounter(latitude: latitude, longitude: longitude);
+      final encounter = await ref.read(npcApiProvider).checkSpawn();
       if (encounter != null) state = encounter;
     } catch (_) {
       // No encounter on failure.

@@ -17,8 +17,9 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyData> {
 
   Future<WeeklyData> _load() async {
     final repo = ref.read(weeklyRepositoryProvider);
-    final (status, photos) =
-        await (repo.getWeeklyQuest(), repo.getPhotos()).wait;
+    // The community quest id is needed before posts can be fetched.
+    final status = await repo.getWeeklyQuest();
+    final photos = await repo.getPosts(status.quest.id);
     return WeeklyData(status: status, photos: photos);
   }
 
@@ -27,16 +28,23 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyData> {
     state = await AsyncValue.guard(_load);
   }
 
+  /// Submits the user's photo/entry to the current weekly community feed.
+  /// [userQuestId] is the user's completed weekly quest, when available.
   Future<void> sharePhoto({
     required String photoUrl,
-    required String questTitle,
+    String? userQuestId,
     String? caption,
   }) async {
-    await ref.read(weeklyRepositoryProvider).sharePhoto(
-          photoUrl: photoUrl,
-          questTitle: questTitle,
-          caption: caption,
-        );
+    final repo = ref.read(weeklyRepositoryProvider);
+    // Resolve the community quest id from current state, else fetch it.
+    final weeklyQuestId =
+        state.value?.status.quest.id ?? (await repo.getWeeklyQuest()).quest.id;
+    await repo.submit(
+      weeklyQuestId: weeklyQuestId,
+      userQuestId: userQuestId,
+      photoUrl: photoUrl,
+      caption: caption,
+    );
     await refresh();
   }
 }

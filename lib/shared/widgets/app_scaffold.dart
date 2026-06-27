@@ -38,6 +38,23 @@ const _swordGlyph = [
   '............',
 ];
 
+// Compass rose (diamond bezel) for the Map tab — bold + filled to match the
+// other tab glyphs.
+const _compassGlyph = [
+  '.....XX.....',
+  '....XXXX....',
+  '...XXXXXX...',
+  '..XXXXXXXX..',
+  '.XXXX..XXXX.',
+  'XXXX....XXXX',
+  'XXXX....XXXX',
+  '.XXXX..XXXX.',
+  '..XXXXXXXX..',
+  '...XXXXXX...',
+  '....XXXX....',
+  '.....XX.....',
+];
+
 const _bannerGlyph = [
   '............',
   '.XXXXXXXXXX.',
@@ -93,6 +110,7 @@ class _PixelNavBar extends StatelessWidget {
 
   static const _items = [
     (_swordGlyph, 'Quests'),
+    (_compassGlyph, 'Map'),
     (_bannerGlyph, 'Events'),
     (_helmetGlyph, 'Hero'),
     (_shieldGlyph, 'Stats'),

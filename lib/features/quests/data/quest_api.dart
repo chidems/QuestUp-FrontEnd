@@ -9,6 +9,8 @@ class QuestApi {
 
   QuestApi(this._dio);
 
+  /// Opens an app session: tops up normal quests, returns the weekly quest and
+  /// progression. `lat`/`lng` are both-or-neither per the backend contract.
   Future<QuestFeed> getFeed({
     required double latitude,
     required double longitude,
@@ -16,12 +18,32 @@ class QuestApi {
   }) async {
     if (AppConfig.useMockApi) return _mockFeed();
     try {
-      final response = await _dio.post('/quests/feed', data: {
-        'latitude': latitude,
-        'longitude': longitude,
+      final response = await _dio.post('/quests/session/open', data: {
+        'lat': latitude,
+        'lng': longitude,
         'timezone': timezone,
       });
       return QuestFeed.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
+  Future<Quest> acceptQuest(String id) async {
+    if (AppConfig.useMockApi) return _mockFeed().normalQuests.first;
+    try {
+      final response = await _dio.post('/quests/$id/accept');
+      return Quest.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
+  Future<Quest> skipQuest(String id) async {
+    if (AppConfig.useMockApi) return _mockFeed().normalQuests.first;
+    try {
+      final response = await _dio.post('/quests/$id/skip');
+      return Quest.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }
@@ -45,11 +67,26 @@ class QuestApi {
   Future<QuestCompletionResult> completeQuest(
     String id, {
     String? photoUrl,
+    String? caption,
+    String? notes,
+    int? rating,
+    bool sharedToCommunity = false,
+    double? completionLat,
+    double? completionLng,
   }) async {
     if (AppConfig.useMockApi) return _mockCompletion(id);
     try {
       final response = await _dio.post('/quests/$id/complete', data: {
         if (photoUrl != null) 'photo_url': photoUrl,
+        if (caption != null) 'caption': caption,
+        if (notes != null) 'notes': notes,
+        if (rating != null) 'rating': rating,
+        'shared_to_community': sharedToCommunity,
+        // completion_lat/lng are both-or-neither per the backend contract.
+        if (completionLat != null && completionLng != null) ...{
+          'completion_lat': completionLat,
+          'completion_lng': completionLng,
+        },
       });
       return QuestCompletionResult.fromJson(
         response.data as Map<String, dynamic>,
@@ -107,6 +144,9 @@ class QuestApi {
             xpReward: 80,
             coinReward: 35,
             status: 'active',
+            // Demo coordinate ~0.45 km SW of the mock center, for the Map tab.
+            targetLatitude: 49.2796,
+            targetLongitude: -123.1248,
             requiresPhoto: false,
           ),
         ],
@@ -122,6 +162,9 @@ class QuestApi {
           xpReward: 150,
           coinReward: 100,
           status: 'active',
+          // Demo coordinate ~0.55 km NW of the mock center, for the Map tab.
+          targetLatitude: 49.2858,
+          targetLongitude: -123.1262,
           requiresPhoto: true,
           isWeekly: true,
         ),

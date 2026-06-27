@@ -8,16 +8,19 @@ class WeeklyRepository {
 
   Future<WeeklyQuestStatus> getWeeklyQuest() => _api.getWeeklyQuest();
 
-  Future<List<WeeklyPhotoPost>> getPhotos() => _api.getPhotos();
+  Future<List<WeeklyPhotoPost>> getPosts(String weeklyQuestId) =>
+      _api.getPosts(weeklyQuestId);
 
-  Future<WeeklyPhotoPost> sharePhoto({
-    required String photoUrl,
-    required String questTitle,
+  Future<WeeklyPhotoPost> submit({
+    required String weeklyQuestId,
+    String? userQuestId,
+    String? photoUrl,
     String? caption,
   }) =>
-      _api.sharePhoto(
+      _api.submit(
+        weeklyQuestId: weeklyQuestId,
+        userQuestId: userQuestId,
         photoUrl: photoUrl,
-        questTitle: questTitle,
         caption: caption,
       );
 }

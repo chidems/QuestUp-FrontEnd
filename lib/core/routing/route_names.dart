@@ -3,6 +3,7 @@ class RouteNames {
   static const String register = '/register';
   static const String onboarding = '/onboarding';
   static const String home = '/home';
+  static const String map = '/map';
   static const String questDetail = '/quests/:id';
   static const String questComplete = '/quests/:id/complete';
   static const String weekly = '/weekly';

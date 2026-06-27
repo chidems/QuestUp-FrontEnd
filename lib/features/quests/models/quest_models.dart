@@ -37,27 +37,37 @@ class Quest {
     this.npcId,
   });
 
-  factory Quest.fromJson(Map<String, dynamic> json) => Quest(
-        id: json['id']?.toString() ?? '',
-        title: json['title'] as String? ?? '',
-        description: json['description'] as String? ?? '',
-        questType: json['quest_type'] as String? ?? 'action',
-        source: json['source'] as String? ?? 'normal',
-        difficulty: (json['difficulty'] as num?)?.toInt() ?? 1,
-        xpReward: (json['xp_reward'] as num?)?.toInt() ?? 0,
-        coinReward: (json['coin_reward'] as num?)?.toInt() ?? 0,
-        status: json['status'] as String? ?? 'active',
-        targetLatitude: (json['target_latitude'] as num?)?.toDouble(),
-        targetLongitude: (json['target_longitude'] as num?)?.toDouble(),
-        targetPlaceName: json['target_place_name'] as String?,
-        distanceMeters: (json['distance_meters'] as num?)?.toDouble(),
-        expiresAt: json['expires_at'] != null
-            ? DateTime.tryParse(json['expires_at'].toString())
-            : null,
-        requiresPhoto: json['requires_photo'] as bool? ?? false,
-        isWeekly: json['is_weekly'] as bool? ?? false,
-        npcId: json['npc_id']?.toString(),
-      );
+  factory Quest.fromJson(Map<String, dynamic> json) {
+    final source = json['source'] as String? ?? 'normal';
+    return Quest(
+      id: json['id']?.toString() ?? '',
+      // QuestOut uses generated_title/description; community quests use
+      // plain title/description. Accept either.
+      title: json['generated_title'] as String? ??
+          json['title'] as String? ??
+          '',
+      description: json['generated_description'] as String? ??
+          json['description'] as String? ??
+          '',
+      questType: json['quest_type'] as String? ?? 'action',
+      source: source,
+      difficulty: (json['difficulty'] as num?)?.toInt() ?? 1,
+      xpReward: (json['xp_reward'] as num?)?.toInt() ?? 0,
+      coinReward: (json['coin_reward'] as num?)?.toInt() ?? 0,
+      status: json['status'] as String? ?? 'active',
+      targetLatitude: (json['target_latitude'] as num?)?.toDouble(),
+      targetLongitude: (json['target_longitude'] as num?)?.toDouble(),
+      targetPlaceName: json['target_place_name'] as String?,
+      distanceMeters: (json['distance_meters'] as num?)?.toDouble(),
+      expiresAt: json['expires_at'] != null
+          ? DateTime.tryParse(json['expires_at'].toString())
+          : null,
+      requiresPhoto: json['requires_photo'] as bool? ?? false,
+      // The backend doesn't send is_weekly; derive it from the source.
+      isWeekly: json['is_weekly'] as bool? ?? (source == 'weekly'),
+      npcId: json['npc_id']?.toString(),
+    );
+  }
 
   String get difficultyLabel {
     switch (difficulty) {
@@ -86,14 +96,13 @@ class QuestFeed {
     this.message,
   });
 
+  // Shaped from POST /quests/session/open: { normal: [...], weekly: {...}, ... }.
   factory QuestFeed.fromJson(Map<String, dynamic> json) => QuestFeed(
-        normalQuests: (json['normal_quests'] as List<dynamic>? ?? [])
+        normalQuests: (json['normal'] as List<dynamic>? ?? [])
             .map((e) => Quest.fromJson(e as Map<String, dynamic>))
             .toList(),
-        weeklyQuest: json['weekly_quest'] != null
-            ? Quest.fromJson(json['weekly_quest'] as Map<String, dynamic>)
+        weeklyQuest: json['weekly'] != null
+            ? Quest.fromJson(json['weekly'] as Map<String, dynamic>)
             : null,
-        generatedNewQuests: json['generated_new_quests'] as bool? ?? false,
-        message: json['message'] as String?,
       );
 }

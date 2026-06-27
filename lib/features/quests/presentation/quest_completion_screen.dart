@@ -77,7 +77,7 @@ class _QuestCompletionScreenState
     try {
       await ref.read(weeklyProvider.notifier).sharePhoto(
             photoUrl: photoUrl,
-            questTitle: quest.title,
+            userQuestId: quest.id,
           );
       messenger.showSnackBar(
         const SnackBar(content: Text('Shared to the community!')),

@@ -4,10 +4,6 @@ import 'package:geolocator/geolocator.dart';
 import '../../../core/config/app_config.dart';
 import 'npc_encounter_provider.dart';
 
-// Fallback coordinates used in mock mode (no real GPS).
-const double _mockLat = 49.2827;
-const double _mockLng = -123.1207;
-
 class WalkingSessionState {
   final bool isActive;
   final bool isWalking;
@@ -26,6 +22,9 @@ class WalkingSessionState {
 class WalkingSessionNotifier extends Notifier<WalkingSessionState> {
   StreamSubscription<Position>? _sub;
   Timer? _mockTimer;
+
+  /// Backend walking-session id, created lazily on the first real movement.
+  String? _sessionId;
 
   // Shortened in mock mode so the flow is demoable without a real 3-min walk.
   int get _thresholdSeconds => AppConfig.useMockApi ? 10 : 180;
@@ -56,6 +55,16 @@ class WalkingSessionNotifier extends Notifier<WalkingSessionState> {
     _sub = null;
     _mockTimer?.cancel();
     _mockTimer = null;
+    final id = _sessionId;
+    _sessionId = null;
+    if (id != null) {
+      // Fire-and-forget; the session is over regardless of the result.
+      try {
+        ref.read(npcApiProvider).endWalkingSession(id).catchError((_) {});
+      } catch (_) {
+        // Container may already be disposed; nothing to do.
+      }
+    }
   }
 
   void _startReal() {
@@ -77,10 +86,7 @@ class WalkingSessionNotifier extends Notifier<WalkingSessionState> {
       isWalking: true,
       walkingSince: since,
     );
-    _mockTimer = Timer(
-      Duration(seconds: _thresholdSeconds),
-      () => _check(_mockLat, _mockLng),
-    );
+    _mockTimer = Timer(Duration(seconds: _thresholdSeconds), _check);
   }
 
   void _onMovement(double speed, double lat, double lng) {
@@ -99,17 +105,34 @@ class WalkingSessionNotifier extends Notifier<WalkingSessionState> {
       walkingSince: since,
     );
 
-    final seconds = DateTime.now().difference(since).inSeconds;
-    ref.read(npcEncounterProvider.notifier).sessionTick(
-          latitude: lat,
-          longitude: lng,
-          walkingSeconds: seconds,
-        );
+    _reportPosition(lat, lng, speed);
 
-    if (seconds >= _thresholdSeconds) _check(lat, lng);
+    final seconds = DateTime.now().difference(since).inSeconds;
+    if (seconds >= _thresholdSeconds) _check();
   }
 
-  Future<void> _check(double lat, double lng) async {
+  /// Lazily starts the backend walking session on the first movement, then
+  /// streams location updates to it. Best-effort.
+  Future<void> _reportPosition(double lat, double lng, double speed) async {
+    final api = ref.read(npcApiProvider);
+    try {
+      if (_sessionId == null) {
+        _sessionId =
+            await api.startWalkingSession(latitude: lat, longitude: lng);
+        return;
+      }
+      await api.updateWalkingSession(
+        sessionId: _sessionId!,
+        latitude: lat,
+        longitude: lng,
+        speedMps: speed,
+      );
+    } catch (_) {
+      // Best-effort tracking; ignore failures.
+    }
+  }
+
+  Future<void> _check() async {
     // Restart the continuous-walking window so we don't fire repeatedly.
     if (state.isActive) {
       state = WalkingSessionState(
@@ -118,9 +141,7 @@ class WalkingSessionNotifier extends Notifier<WalkingSessionState> {
         walkingSince: DateTime.now(),
       );
     }
-    await ref
-        .read(npcEncounterProvider.notifier)
-        .checkEncounter(latitude: lat, longitude: lng);
+    await ref.read(npcEncounterProvider.notifier).checkSpawn();
   }
 }
 

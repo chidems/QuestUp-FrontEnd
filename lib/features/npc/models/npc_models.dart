@@ -19,18 +19,36 @@ class NPCEncounter {
     this.encounterChanceUsed,
   });
 
-  factory NPCEncounter.fromJson(Map<String, dynamic> json) => NPCEncounter(
-        id: json['id']?.toString() ?? '',
-        npcName: json['npc_name'] as String? ?? 'Mysterious Stranger',
-        npcImageUrl: json['npc_image_url'] as String?,
-        message: json['message'] as String? ?? '',
-        questOffer: json['quest_offer'] is Map<String, dynamic>
-            ? Quest.fromJson(json['quest_offer'] as Map<String, dynamic>)
-            : null,
-        expiresAt: json['expires_at'] != null
-            ? DateTime.tryParse(json['expires_at'].toString())
-            : null,
-        encounterChanceUsed:
-            (json['encounter_chance_used'] as num?)?.toDouble(),
-      );
+  // Built from an NPC offer object (see /npc/spawn/check, /npc/offers/current):
+  // { id, user_id, npc_id, generated_title, generated_description,
+  //   xp_reward, coin_reward, status }. The offer's description doubles as the
+  // NPC's spoken message, and the offer itself becomes the quest on accept.
+  factory NPCEncounter.fromJson(Map<String, dynamic> json) {
+    final offer = json['offer'] is Map<String, dynamic>
+        ? json['offer'] as Map<String, dynamic>
+        : json;
+    return NPCEncounter(
+      id: offer['id']?.toString() ?? '',
+      npcName: offer['npc_name'] as String? ?? 'Mysterious Stranger',
+      npcImageUrl: offer['npc_image_url'] as String?,
+      message: offer['generated_description'] as String? ??
+          offer['message'] as String? ??
+          '',
+      questOffer: Quest.fromJson({
+        'id': offer['id'],
+        'generated_title': offer['generated_title'],
+        'generated_description': offer['generated_description'],
+        'xp_reward': offer['xp_reward'],
+        'coin_reward': offer['coin_reward'],
+        'source': 'npc',
+        'status': 'active',
+        'npc_id': offer['npc_id'],
+      }),
+      expiresAt: offer['expires_at'] != null
+          ? DateTime.tryParse(offer['expires_at'].toString())
+          : null,
+      encounterChanceUsed:
+          (offer['encounter_chance_used'] as num?)?.toDouble(),
+    );
+  }
 }

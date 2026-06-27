@@ -4,10 +4,11 @@ class PhotoUploadResult {
 
   const PhotoUploadResult({required this.id, required this.url});
 
+  // POST /photos/upload-url returns { upload_url, method }.
   factory PhotoUploadResult.fromJson(Map<String, dynamic> json) =>
       PhotoUploadResult(
-        id: json['id']?.toString() ?? '',
-        url: json['url'] as String? ?? '',
+        id: json['method'] as String? ?? json['id']?.toString() ?? '',
+        url: json['upload_url'] as String? ?? json['url'] as String? ?? '',
       );
 }
 
@@ -22,7 +23,9 @@ class RewardAchievement {
 
   factory RewardAchievement.fromJson(Map<String, dynamic> json) =>
       RewardAchievement(
-        id: json['id']?.toString() ?? '',
+        id: json['achievement_id']?.toString() ??
+            json['id']?.toString() ??
+            '',
         name: json['name'] as String? ?? '',
         iconUrl: json['icon_url'] as String?,
       );
@@ -76,29 +79,28 @@ class QuestCompletionResult {
     this.message,
   });
 
+  // Shaped from POST /quests/{id}/complete.
   factory QuestCompletionResult.fromJson(Map<String, dynamic> json) {
-    final levelBefore = (json['level_before'] as num?)?.toInt() ?? 0;
-    final levelAfter = (json['level_after'] as num?)?.toInt() ?? levelBefore;
+    final levelBefore = (json['previous_level'] as num?)?.toInt() ?? 0;
+    final levelAfter = (json['level'] as num?)?.toInt() ?? levelBefore;
     return QuestCompletionResult(
-      questId: json['quest_id']?.toString() ?? '',
-      xpGained: (json['xp_gained'] as num?)?.toInt() ?? 0,
-      coinsGained: (json['coins_gained'] as num?)?.toInt() ?? 0,
+      // The response carries the completion id, not the quest id.
+      questId: json['id']?.toString() ?? '',
+      xpGained: (json['xp_awarded'] as num?)?.toInt() ?? 0,
+      coinsGained: (json['coins_awarded'] as num?)?.toInt() ?? 0,
       levelBefore: levelBefore,
       levelAfter: levelAfter,
-      didLevelUp: json['did_level_up'] as bool? ?? (levelAfter > levelBefore),
-      streakCount: (json['streak_count'] as num?)?.toInt() ?? 0,
-      statChanges: (json['stat_changes'] as Map<String, dynamic>?)?.map(
-            (k, v) => MapEntry(k, (v as num).toInt()),
-          ) ??
-          const {},
+      didLevelUp: json['leveled_up'] as bool? ?? (levelAfter > levelBefore),
+      streakCount: (json['current_streak'] as num?)?.toInt() ?? 0,
+      // The backend doesn't break rewards down per life-stat on completion.
+      statChanges: const {},
       unlockedAchievements: (json['unlocked_achievements'] as List<dynamic>? ??
               [])
           .map((e) => RewardAchievement.fromJson(e as Map<String, dynamic>))
           .toList(),
-      itemRewards: (json['item_rewards'] as List<dynamic>? ?? [])
-          .map((e) => RewardItem.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      message: json['message'] as String?,
+      // Items are returned as ids (item_awarded_id), not full objects, so no
+      // name/rarity to render in the reward summary yet.
+      itemRewards: const [],
     );
   }
 }

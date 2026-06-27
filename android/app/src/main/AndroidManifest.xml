@@ -6,6 +6,12 @@
         android:label="quest_up"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Injected by Gradle from the gitignored android/secrets.properties
+             (see secrets.properties.example). Set a real key there; the map
+             renders blank without one. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -20,7 +20,9 @@ class QuestHistoryItem {
   factory QuestHistoryItem.fromJson(Map<String, dynamic> json) =>
       QuestHistoryItem(
         id: json['id']?.toString() ?? '',
-        title: json['title'] as String? ?? '',
+        title: json['generated_title'] as String? ??
+            json['title'] as String? ??
+            '',
         questType: json['quest_type'] as String? ?? 'action',
         xpEarned: (json['xp_earned'] as num?)?.toInt() ??
             (json['xp_reward'] as num?)?.toInt() ??

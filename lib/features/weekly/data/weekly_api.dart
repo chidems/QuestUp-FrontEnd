@@ -12,19 +12,20 @@ class WeeklyApi {
   Future<WeeklyQuestStatus> getWeeklyQuest() async {
     if (AppConfig.useMockApi) return _mockStatus();
     try {
-      final response = await _dio.get('/community/weekly-quest');
+      final response = await _dio.get('/community/weekly/current');
       return WeeklyQuestStatus.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }
   }
 
-  Future<List<WeeklyPhotoPost>> getPhotos() async {
+  Future<List<WeeklyPhotoPost>> getPosts(String weeklyQuestId) async {
     if (AppConfig.useMockApi) return _mockPhotos();
     try {
-      final response = await _dio.get('/community/weekly-quest/photos');
+      final response =
+          await _dio.get('/community/weekly/$weeklyQuestId/posts');
       final data = response.data;
-      final list = data is List ? data : (data['photos'] as List? ?? []);
+      final list = data is List ? data : (data['posts'] as List? ?? []);
       return list
           .map((e) => WeeklyPhotoPost.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -33,17 +34,20 @@ class WeeklyApi {
     }
   }
 
-  Future<WeeklyPhotoPost> sharePhoto({
-    required String photoUrl,
-    required String questTitle,
+  /// Submits the user's entry to the weekly community feed. [userQuestId], when
+  /// provided, must be a completed weekly quest owned by the user.
+  Future<WeeklyPhotoPost> submit({
+    required String weeklyQuestId,
+    String? userQuestId,
+    String? photoUrl,
     String? caption,
   }) async {
     if (AppConfig.useMockApi) {
       return WeeklyPhotoPost(
         id: 'mock_share',
         userDisplayName: 'Hero',
-        photoUrl: photoUrl,
-        questTitle: questTitle,
+        photoUrl: photoUrl ?? '',
+        questTitle: '',
         caption: caption,
         likesCount: 0,
         createdAt: DateTime.now(),
@@ -51,10 +55,10 @@ class WeeklyApi {
     }
     try {
       final response = await _dio.post(
-        '/community/weekly-quest/share-photo',
+        '/community/weekly/$weeklyQuestId/submit',
         data: {
+          if (userQuestId != null) 'user_quest_id': userQuestId,
           'photo_url': photoUrl,
-          'quest_title': questTitle,
           if (caption != null) 'caption': caption,
         },
       );

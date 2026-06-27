@@ -1,9 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Google Maps key, loaded from the gitignored android/secrets.properties (see
+// secrets.properties.example). Falls back to a placeholder so builds without the
+// file still succeed — the map just renders blank.
+val secretsProperties = Properties()
+val secretsFile = rootProject.file("secrets.properties")
+if (secretsFile.exists()) {
+    secretsFile.inputStream().use { secretsProperties.load(it) }
+}
+val mapsApiKey: String =
+    secretsProperties.getProperty("MAPS_API_KEY") ?: "YOUR_MAPS_API_KEY"
 
 android {
     namespace = "com.example.quest_up"
@@ -28,6 +41,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Substituted into AndroidManifest.xml as ${MAPS_API_KEY}.
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {

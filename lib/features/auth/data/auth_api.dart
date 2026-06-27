@@ -10,7 +10,7 @@ class AuthApi {
   AuthApi(this._dio);
 
   Future<AuthResponse> login(LoginRequest request) async {
-    if (AppConfig.useMockApi) return _mockAuthResponse(request.email, 'Hero');
+    if (AppConfig.useMockApi) return _mockTokens();
     try {
       final response =
           await _dio.post('/auth/login', data: request.toJson());
@@ -21,9 +21,7 @@ class AuthApi {
   }
 
   Future<AuthResponse> register(RegisterRequest request) async {
-    if (AppConfig.useMockApi) {
-      return _mockAuthResponse(request.email, request.displayName);
-    }
+    if (AppConfig.useMockApi) return _mockTokens();
     try {
       final response =
           await _dio.post('/auth/register', data: request.toJson());
@@ -36,7 +34,7 @@ class AuthApi {
   Future<User> getMe() async {
     if (AppConfig.useMockApi) return _mockUser();
     try {
-      final response = await _dio.get('/users/me');
+      final response = await _dio.get('/auth/me');
       return User.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
@@ -45,21 +43,9 @@ class AuthApi {
 
   // --- Mock helpers ---
 
-  Future<AuthResponse> _mockAuthResponse(
-          String email, String displayName) async =>
-      AuthResponse(
+  Future<AuthResponse> _mockTokens() async => const AuthResponse(
         accessToken: 'mock_access_token',
         refreshToken: 'mock_refresh_token',
-        user: User(
-          id: '1',
-          email: email,
-          displayName: displayName,
-          level: 3,
-          totalXp: 450,
-          coins: await _mockCoins(),
-          currentStreak: 5,
-          longestStreak: 12,
-        ),
       );
 
   Future<User> _mockUser() async => User(

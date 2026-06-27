@@ -9,13 +9,14 @@ class AuthRepository {
   AuthRepository(this._api, this._tokenStorage);
 
   Future<User> login(String email, String password) async {
-    final response =
+    final tokens =
         await _api.login(LoginRequest(email: email, password: password));
     await _tokenStorage.saveTokens(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     );
-    return response.user;
+    // Login returns only tokens; the user comes from /auth/me.
+    return _api.getMe();
   }
 
   Future<User> register(
@@ -23,16 +24,16 @@ class AuthRepository {
     String displayName,
     String password,
   ) async {
-    final response = await _api.register(RegisterRequest(
+    final tokens = await _api.register(RegisterRequest(
       email: email,
       displayName: displayName,
       password: password,
     ));
     await _tokenStorage.saveTokens(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     );
-    return response.user;
+    return _api.getMe();
   }
 
   // Returns the current user from the server if a stored token exists.

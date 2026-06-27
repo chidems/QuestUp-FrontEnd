@@ -25,21 +25,20 @@ class RegisterRequest {
       };
 }
 
+/// Token pair returned by `/auth/login`, `/auth/register`, `/auth/refresh`.
+/// The backend returns only tokens here; the user is fetched via `/auth/me`.
 class AuthResponse {
   final String accessToken;
   final String? refreshToken;
-  final User user;
 
   const AuthResponse({
     required this.accessToken,
     this.refreshToken,
-    required this.user,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
         accessToken: json['access_token'] as String,
         refreshToken: json['refresh_token'] as String?,
-        user: User.fromJson(json['user'] as Map<String, dynamic>),
       );
 }
 

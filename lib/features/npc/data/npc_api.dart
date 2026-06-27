@@ -9,66 +9,87 @@ class NpcApi {
 
   NpcApi(this._dio);
 
-  /// Reports walking/location context to the backend. Best-effort.
-  Future<void> sessionTick({
-    required double latitude,
-    required double longitude,
-    required int walkingSeconds,
-  }) async {
-    if (AppConfig.useMockApi) return;
-    try {
-      await _dio.post('/walking/session-tick', data: {
-        'latitude': latitude,
-        'longitude': longitude,
-        'walking_seconds': walkingSeconds,
-      });
-    } on DioException catch (e) {
-      throw dioErrorToApiException(e);
-    }
-  }
+  // --- Walking sessions ---
 
-  /// Asks the backend whether an NPC appears. The backend owns the random
-  /// chance; the frontend only reports context. Returns null when none.
-  Future<NPCEncounter?> checkEncounter({
+  /// Starts a walking session and returns its id (null in mock mode).
+  Future<String?> startWalkingSession({
     required double latitude,
     required double longitude,
   }) async {
-    if (AppConfig.useMockApi) return _mockEncounter();
+    if (AppConfig.useMockApi) return 'mock_session';
     try {
-      final response = await _dio.post('/npc/check-encounter', data: {
-        'latitude': latitude,
-        'longitude': longitude,
+      final response = await _dio.post('/walking/session/start', data: {
+        'lat': latitude,
+        'lng': longitude,
       });
       final data = response.data;
-      if (data == null) return null;
-      if (data is Map<String, dynamic>) {
-        if (data.isEmpty) return null;
-        final encounter = data['encounter'];
-        if (encounter is Map<String, dynamic>) {
-          return NPCEncounter.fromJson(encounter);
-        }
-        if (data.containsKey('encounter')) return null; // explicit null
-        return NPCEncounter.fromJson(data);
-      }
-      return null;
+      return data is Map<String, dynamic> ? data['id']?.toString() : null;
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }
   }
 
-  Future<void> accept(String encounterId) async {
+  Future<void> updateWalkingSession({
+    required String sessionId,
+    required double latitude,
+    required double longitude,
+    double? speedMps,
+  }) async {
     if (AppConfig.useMockApi) return;
     try {
-      await _dio.post('/npc/$encounterId/accept');
+      await _dio.post('/walking/session/update', data: {
+        'session_id': sessionId,
+        'lat': latitude,
+        'lng': longitude,
+        if (speedMps != null) 'speed_mps': speedMps,
+      });
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }
   }
 
-  Future<void> decline(String encounterId) async {
+  Future<void> endWalkingSession(String sessionId) async {
     if (AppConfig.useMockApi) return;
     try {
-      await _dio.post('/npc/$encounterId/decline');
+      await _dio.post('/walking/session/end',
+          queryParameters: {'session_id': sessionId});
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
+  // --- NPC offers ---
+
+  /// Asks the backend whether an NPC spawns. The backend owns the chance.
+  /// Returns the offer as an encounter, or null when none.
+  Future<NPCEncounter?> checkSpawn() async {
+    if (AppConfig.useMockApi) return _mockEncounter();
+    try {
+      final response = await _dio.post('/npc/spawn/check');
+      final data = response.data;
+      if (data is! Map<String, dynamic>) return null;
+      if (data['npc_spawned'] != true) return null;
+      final offer = data['offer'];
+      if (offer is! Map<String, dynamic>) return null;
+      return NPCEncounter.fromJson(offer);
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
+  Future<void> accept(String offerId) async {
+    if (AppConfig.useMockApi) return;
+    try {
+      await _dio.post('/npc/offers/$offerId/accept');
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
+  Future<void> decline(String offerId) async {
+    if (AppConfig.useMockApi) return;
+    try {
+      await _dio.post('/npc/offers/$offerId/decline');
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }

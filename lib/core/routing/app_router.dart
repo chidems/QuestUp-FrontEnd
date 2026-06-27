@@ -7,6 +7,7 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/quests/presentation/quest_feed_screen.dart';
 import '../../features/quests/presentation/quest_detail_screen.dart';
 import '../../features/quests/presentation/quest_completion_screen.dart';
+import '../../features/map/presentation/map_screen.dart';
 import '../../features/weekly/presentation/weekly_quest_screen.dart';
 import '../../features/avatar/presentation/hero_screen.dart';
 import '../../features/avatar/presentation/customize_screen.dart';
@@ -113,6 +114,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: RouteNames.home,
               builder: (_, __) => const QuestFeedScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: RouteNames.map,
+              builder: (_, __) => const MapScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [

@@ -7,17 +7,23 @@ import 'api_exception.dart';
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
 
+BaseOptions _baseOptions() => BaseOptions(
+      baseUrl: AppConfig.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {'Content-Type': 'application/json'},
+    );
+
 final dioClientProvider = Provider<Dio>((ref) {
   final tokenStorage = ref.read(tokenStorageProvider);
 
-  final dio = Dio(BaseOptions(
-    baseUrl: AppConfig.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 30),
-    headers: {'Content-Type': 'application/json'},
-  ));
+  final dio = Dio(_baseOptions());
 
-  dio.interceptors.add(AuthInterceptor(tokenStorage));
+  // Separate client without the auth interceptor: used to refresh tokens and
+  // replay requests so refreshing can't recurse back through onError.
+  final refreshDio = Dio(_baseOptions());
+
+  dio.interceptors.add(AuthInterceptor(tokenStorage, refreshDio));
 
   return dio;
 });

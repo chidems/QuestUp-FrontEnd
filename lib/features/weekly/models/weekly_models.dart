@@ -19,9 +19,13 @@ class WeeklyPhotoPost {
     this.createdAt,
   });
 
+  // Shaped from GET /community/weekly/{id}/posts. The backend exposes the
+  // poster's user_id (no display name yet) and no timestamp.
   factory WeeklyPhotoPost.fromJson(Map<String, dynamic> json) => WeeklyPhotoPost(
         id: json['id']?.toString() ?? '',
-        userDisplayName: json['user_display_name'] as String? ?? 'Adventurer',
+        userDisplayName: json['user_display_name'] as String? ??
+            json['user_id']?.toString() ??
+            'Adventurer',
         photoUrl: json['photo_url'] as String? ?? '',
         questTitle: json['quest_title'] as String? ?? '',
         caption: json['caption'] as String?,
@@ -38,11 +42,12 @@ class WeeklyQuestStatus {
 
   const WeeklyQuestStatus({required this.quest, required this.isCompleted});
 
+  // Shaped from GET /community/weekly/current (a community quest object). Force
+  // the source to "weekly" so the quest renders with weekly styling.
   factory WeeklyQuestStatus.fromJson(Map<String, dynamic> json) {
-    // Backend may nest the quest under "quest" or return its fields inline.
     final questJson = json['quest'] as Map<String, dynamic>? ?? json;
     return WeeklyQuestStatus(
-      quest: Quest.fromJson(questJson),
+      quest: Quest.fromJson({'source': 'weekly', ...questJson}),
       isCompleted: json['is_completed'] as bool? ?? false,
     );
   }
