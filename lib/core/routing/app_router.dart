@@ -16,6 +16,7 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/achievements/presentation/achievements_screen.dart';
 import '../../features/history/presentation/quest_history_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/splash/presentation/splash_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import 'route_names.dart';
 
@@ -50,9 +51,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
-    initialLocation: RouteNames.login,
+    initialLocation: RouteNames.splash,
     refreshListenable: notifier,
     redirect: (context, state) {
+      // The splash owns startup: it waits out the session restore and its
+      // own intro animation, then navigates itself — don't redirect it.
+      if (state.matchedLocation == RouteNames.splash) return null;
+
       final authValue = ref.read(authStateProvider);
 
       // Still initialising — don't redirect yet.
@@ -67,6 +72,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: RouteNames.splash,
+        builder: (_, __) => const SplashScreen(),
+      ),
       GoRoute(
         path: RouteNames.login,
         builder: (_, __) => const LoginScreen(),

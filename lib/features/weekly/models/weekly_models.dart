@@ -2,6 +2,7 @@ import '../../quests/models/quest_models.dart';
 
 class WeeklyPhotoPost {
   final String id;
+  final String? userId;
   final String userDisplayName;
   final String photoUrl;
   final String questTitle;
@@ -11,6 +12,7 @@ class WeeklyPhotoPost {
 
   const WeeklyPhotoPost({
     required this.id,
+    this.userId,
     required this.userDisplayName,
     required this.photoUrl,
     required this.questTitle,
@@ -23,6 +25,7 @@ class WeeklyPhotoPost {
   // poster's user_id (no display name yet) and no timestamp.
   factory WeeklyPhotoPost.fromJson(Map<String, dynamic> json) => WeeklyPhotoPost(
         id: json['id']?.toString() ?? '',
+        userId: json['user_id']?.toString(),
         userDisplayName: json['user_display_name'] as String? ??
             json['user_id']?.toString() ??
             'Adventurer',
@@ -48,9 +51,16 @@ class WeeklyQuestStatus {
     final questJson = json['quest'] as Map<String, dynamic>? ?? json;
     return WeeklyQuestStatus(
       quest: Quest.fromJson({'source': 'weekly', ...questJson}),
+      // The backend doesn't send is_completed; the caller derives it from
+      // the community post feed instead (see WeeklyNotifier._load).
       isCompleted: json['is_completed'] as bool? ?? false,
     );
   }
+
+  WeeklyQuestStatus copyWith({bool? isCompleted}) => WeeklyQuestStatus(
+        quest: quest,
+        isCompleted: isCompleted ?? this.isCompleted,
+      );
 }
 
 /// Combined payload for the weekly screen: the quest+status and the feed.

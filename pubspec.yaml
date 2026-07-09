@@ -26,6 +26,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/branding/questup_app_icon_1024.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/branding/questup_app_icon_1024.png"
 
 flutter:
   uses-material-design: true
@@ -33,6 +41,9 @@ flutter:
   # Avatar + shop sprites. Leaf directories only, so the _qa_*.png review
   # sheets at sprites/ root stay out of the bundle.
   assets:
+    # Single file, not the whole branding folder — the launcher-icon source
+    # PNGs there are build-time inputs and shouldn't ship in the bundle.
+    - assets/branding/questup_wordmark_splash_transparent.png
     - assets/map_style/
     - sprites/avatars/skin_tones/
     - sprites/eyes/

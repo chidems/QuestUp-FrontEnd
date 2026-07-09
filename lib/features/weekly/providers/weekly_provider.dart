@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../data/weekly_api.dart';
 import '../data/weekly_repository.dart';
 import '../models/weekly_models.dart';
@@ -20,7 +21,15 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyData> {
     // The community quest id is needed before posts can be fetched.
     final status = await repo.getWeeklyQuest();
     final photos = await repo.getPosts(status.quest.id);
-    return WeeklyData(status: status, photos: photos);
+    // The backend's is_completed is never sent (see WeeklyQuestStatus.fromJson);
+    // derive it by checking whether the current user already has a post here.
+    final userId = ref.read(authStateProvider).value?.id;
+    final isCompleted = userId != null &&
+        photos.any((photo) => photo.userId == userId);
+    return WeeklyData(
+      status: status.copyWith(isCompleted: isCompleted || status.isCompleted),
+      photos: photos,
+    );
   }
 
   Future<void> refresh() async {

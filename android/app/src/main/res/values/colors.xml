@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#000000</color>
+    <!-- Matches the Flutter splash screen's surfaceDeep so the native launch
+         window blends seamlessly into the animated splash. -->
+    <color name="launch_background">#16182C</color>
+</resources>

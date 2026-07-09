@@ -60,7 +60,35 @@ class AppTheme {
           borderRadius: AppRadius.rChip,
           borderSide: BorderSide(color: p.primaryLight, width: 2),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: AppRadius.rChip,
+          borderSide: BorderSide(color: p.error, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: AppRadius.rChip,
+          borderSide: BorderSide(color: p.error, width: 2),
+        ),
+        errorStyle: TextStyle(color: p.error, fontSize: 12, height: 1.3),
         labelStyle: TextStyle(color: p.textSecondary),
+        floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
+          if (states.contains(WidgetState.error)) {
+            return TextStyle(color: p.error);
+          }
+          if (states.contains(WidgetState.focused)) {
+            return TextStyle(color: p.primaryLight);
+          }
+          return TextStyle(color: p.textSecondary);
+        }),
+        prefixIconColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.error)) return p.error;
+          if (states.contains(WidgetState.focused)) return p.primaryLight;
+          return p.textMuted;
+        }),
+        suffixIconColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.error)) return p.error;
+          if (states.contains(WidgetState.focused)) return p.primaryLight;
+          return p.textMuted;
+        }),
         hintStyle: TextStyle(color: p.textMuted),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

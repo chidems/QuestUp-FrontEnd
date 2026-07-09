@@ -5,6 +5,7 @@ import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/pixel_button.dart';
 import '../providers/auth_provider.dart';
+import 'auth_shell.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -20,6 +21,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -31,6 +33,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _submit() async {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
     await ref.read(authStateProvider.notifier).register(
           _emailController.text.trim(),
@@ -48,83 +51,130 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(next.error.toString()),
           backgroundColor: context.colors.error,
+          behavior: SnackBarBehavior.floating,
         ));
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go(RouteNames.login)),
-        title: const Text('Create Account'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Form(
-            key: _formKey,
+    return AuthShell(
+      logoWidth: 190,
+      title: 'CREATE ACCOUNT',
+      onBack: () => context.go(RouteNames.login),
+      children: [
+        Form(
+          key: _formKey,
+          child: AutofillGroup(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (v) =>
-                      (v != null && v.contains('@')) ? null : 'Enter a valid email',
+                  textInputAction: TextInputAction.next,
+                  autocorrect: false,
+                  autofillHints: const [AutofillHints.email],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
+                  ),
+                  validator: (v) => RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                          .hasMatch(v?.trim() ?? '')
+                      ? null
+                      : 'Enter a valid email address',
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 TextFormField(
                   controller: _displayNameController,
-                  decoration: const InputDecoration(labelText: 'Display Name'),
-                  validator: (v) =>
-                      (v != null && v.trim().length >= 2) ? null : 'Min 2 characters',
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.nickname],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: const InputDecoration(
+                    labelText: 'Display Name',
+                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                  ),
+                  validator: (v) => (v != null && v.trim().length >= 2)
+                      ? null
+                      : 'Choose a name (2+ characters)',
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.newPassword],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
                     labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
+                        size: 20,
                       ),
+                      tooltip:
+                          _obscurePassword ? 'Show password' : 'Hide password',
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
-                  validator: (v) =>
-                      (v != null && v.length >= 6) ? null : 'Min 6 characters',
+                  // The backend requires at least 8 characters.
+                  validator: (v) => (v != null && v.length >= 8)
+                      ? null
+                      : 'Password must be at least 8 characters',
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 TextFormField(
                   controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration:
-                      const InputDecoration(labelText: 'Confirm Password'),
+                  obscureText: _obscureConfirm,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.newPassword],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onFieldSubmitted: (_) => _submit(),
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirm
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        size: 20,
+                      ),
+                      tooltip:
+                          _obscureConfirm ? 'Show password' : 'Hide password',
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
+                    ),
+                  ),
                   validator: (v) => v == _passwordController.text
                       ? null
                       : 'Passwords do not match',
-                ),
-                const SizedBox(height: 24),
-                PixelButton(
-                  label: 'Create Account',
-                  fullWidth: true,
-                  isLoading: authState.isLoading,
-                  onPressed: authState.isLoading ? null : _submit,
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => context.go(RouteNames.login),
-                  child: const Text('Already have an account? Login'),
                 ),
               ],
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 24),
+        PixelButton(
+          label: 'Create Account',
+          fullWidth: true,
+          isLoading: authState.isLoading,
+          onPressed: authState.isLoading ? null : _submit,
+        ),
+        const SizedBox(height: 22),
+        const AuthDivider('ALREADY A HERO?'),
+        const SizedBox(height: 16),
+        PixelButton(
+          label: 'Back to Login',
+          fullWidth: true,
+          variant: PixelButtonVariant.navigation,
+          textColor: Colors.black,
+          onPressed: () => context.go(RouteNames.login),
+        ),
+      ],
     );
   }
 }
