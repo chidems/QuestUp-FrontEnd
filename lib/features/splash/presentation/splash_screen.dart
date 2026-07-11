@@ -8,6 +8,7 @@ import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/pixel_glyph.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 
 const _kWordmark = 'assets/branding/questup_wordmark_splash_transparent.png';
 
@@ -125,6 +126,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ref.read(authStateProvider.future).then<void>((_) {}).catchError((_) {}),
     ]);
     if (!mounted) return;
+    // "App opened" is the trigger for the daily streak reminder (see
+    // SettingsNotifier.syncStreakReminderForAppOpen); only meaningful once
+    // there's a signed-in streak to protect.
+    if (ref.read(authStateProvider).value != null) {
+      await ref.read(settingsProvider.future);
+      await ref.read(settingsProvider.notifier).syncStreakReminderForAppOpen();
+    }
     await _exit.forward();
     if (!mounted) return;
     // Always aim for home; the router redirect bounces to login when the

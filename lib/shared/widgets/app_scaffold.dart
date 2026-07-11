@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
-import 'pixel_glyph.dart';
 
 class AppScaffold extends StatelessWidget {
   final StatefulNavigationShell shell;
@@ -22,86 +21,10 @@ class AppScaffold extends StatelessWidget {
   }
 }
 
-/// Hand-drawn 12x12 pixel glyphs for the nav tabs ('X' = filled cell).
-const _swordGlyph = [
-  '........XX..',
-  '.......XXXX.',
-  '......XXXX..',
-  '.....XXXX...',
-  '.X..XXXX....',
-  '.XX.XXX.....',
-  '..XXXX......',
-  '..XXX.......',
-  '.XX.XX......',
-  'XX...X......',
-  '............',
-  '............',
-];
-
-// Compass rose (diamond bezel) for the Map tab — bold + filled to match the
-// other tab glyphs.
-const _compassGlyph = [
-  '.....XX.....',
-  '....XXXX....',
-  '...XXXXXX...',
-  '..XXXXXXXX..',
-  '.XXXX..XXXX.',
-  'XXXX....XXXX',
-  'XXXX....XXXX',
-  '.XXXX..XXXX.',
-  '..XXXXXXXX..',
-  '...XXXXXX...',
-  '....XXXX....',
-  '.....XX.....',
-];
-
-const _bannerGlyph = [
-  '............',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '.XXXX..XXXX.',
-  '.XXX....XXX.',
-  '.XX......XX.',
-  '............',
-  '............',
-  '............',
-];
-
-const _helmetGlyph = [
-  '............',
-  '...XXXXXX...',
-  '..XXXXXXXX..',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '.XX......XX.',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '..XX.XX.XX..',
-  '............',
-  '............',
-  '............',
-];
-
-const _shieldGlyph = [
-  '............',
-  '.XXXXXXXXXX.',
-  '.XXXXXXXXXX.',
-  '.XX......XX.',
-  '.XX.XXXX.XX.',
-  '.XX.XXXX.XX.',
-  '.XX......XX.',
-  '..XX....XX..',
-  '...XX..XX...',
-  '....XXXX....',
-  '.....XX.....',
-  '............',
-];
-
-/// Pixel-styled bottom navigation: chunky top border, hand-drawn pixel
-/// glyphs, an animated plate + pop on the active tab, pixel-font labels.
+/// Pixel-styled bottom navigation: chunky top border, painterly pixel-art
+/// icons (assets/branding/nav), an animated plate + pop on the active tab,
+/// pixel-font labels. The full-color art can't be state-tinted like the old
+/// monochrome glyphs, so inactive tabs desaturate + dim instead.
 class _PixelNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -109,11 +32,10 @@ class _PixelNavBar extends StatelessWidget {
   const _PixelNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (_swordGlyph, 'Quests'),
-    (_compassGlyph, 'Map'),
-    (_bannerGlyph, 'Events'),
-    (_helmetGlyph, 'Hero'),
-    (_shieldGlyph, 'Stats'),
+    ('assets/branding/nav/nav_quests.png', 'Quests'),
+    ('assets/branding/nav/nav_map.png', 'Map'),
+    ('assets/branding/nav/nav_events.png', 'Events'),
+    ('assets/branding/nav/nav_hero.png', 'Hero'),
   ];
 
   @override
@@ -131,7 +53,7 @@ class _PixelNavBar extends StatelessWidget {
             for (var i = 0; i < _items.length; i++)
               Expanded(
                 child: _NavItem(
-                  glyph: _items[i].$1,
+                  asset: _items[i].$1,
                   label: _items[i].$2,
                   selected: i == currentIndex,
                   onTap: () {
@@ -147,14 +69,22 @@ class _PixelNavBar extends StatelessWidget {
   }
 }
 
+/// Rec. 709 luma weights — turns the gold art grey for inactive tabs.
+const _desaturate = ColorFilter.matrix([
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0, 0, 0, 1, 0,
+]);
+
 class _NavItem extends StatelessWidget {
-  final List<String> glyph;
+  final String asset;
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
   const _NavItem({
-    required this.glyph,
+    required this.asset,
     required this.label,
     required this.selected,
     required this.onTap,
@@ -164,6 +94,20 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.colors;
     final color = selected ? p.primaryLight : p.textMuted;
+
+    Widget icon = Image.asset(
+      asset,
+      width: 30,
+      height: 30,
+      // Pixel art: hard edges, no smoothing.
+      filterQuality: FilterQuality.none,
+    );
+    if (!selected) {
+      icon = Opacity(
+        opacity: 0.55,
+        child: ColorFiltered(colorFilter: _desaturate, child: icon),
+      );
+    }
     return MergeSemantics(
       child: Semantics(
         button: true,
@@ -193,7 +137,7 @@ class _NavItem extends StatelessWidget {
                   scale: selected ? 1.15 : 1.0,
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.elasticOut,
-                  child: PixelGlyph(glyph, color: color, size: 22),
+                  child: icon,
                 ),
               ),
               const SizedBox(height: 4),

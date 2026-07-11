@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../data/photo_api.dart';
 import '../models/completion_models.dart';
 import 'quest_feed_provider.dart';
@@ -46,6 +47,8 @@ class QuestCompletionNotifier extends AsyncNotifier<QuestCompletionResult?> {
       // Reflect the new XP/coins/quest list across the app.
       ref.invalidate(questFeedProvider);
       await ref.read(authStateProvider.notifier).refreshUser();
+      // A quest was just done today — today's streak nudge is now moot.
+      await ref.read(settingsProvider.notifier).recordQuestCompletedToday();
 
       return result;
     });

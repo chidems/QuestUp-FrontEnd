@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../quests/providers/quest_feed_provider.dart';
 import '../data/weekly_api.dart';
 import '../data/weekly_repository.dart';
 import '../models/weekly_models.dart';
@@ -26,6 +27,7 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyData> {
     final userId = ref.read(authStateProvider).value?.id;
     final isCompleted = userId != null &&
         photos.any((photo) => photo.userId == userId);
+    await scheduleDeadlineReminders(ref, [status.quest]);
     return WeeklyData(
       status: status.copyWith(isCompleted: isCompleted || status.isCompleted),
       photos: photos,

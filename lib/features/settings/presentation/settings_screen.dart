@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/constants/quest_constants.dart';
 import '../../../core/location/location_service.dart';
+import '../../../core/notifications/notification_service.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -83,6 +84,39 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const Divider(),
+            const _SectionLabel('Notifications'),
+            SwitchListTile(
+              title: const Text('Notifications'),
+              subtitle: const Text('Master switch for all reminders below'),
+              value: s.notificationsEnabled,
+              onChanged: (on) => _setNotificationsEnabled(context, ref, on),
+            ),
+            SwitchListTile(
+              title: const Text('Quest deadline reminders'),
+              subtitle: const Text('Notify about an hour before a quest expires'),
+              value: s.questReminders,
+              onChanged: s.notificationsEnabled
+                  ? (on) =>
+                      ref.read(settingsProvider.notifier).setQuestReminders(on)
+                  : null,
+            ),
+            SwitchListTile(
+              title: const Text('Streak reminders'),
+              subtitle: const Text("Daily nudge if you haven't quested yet"),
+              value: s.streakReminders,
+              onChanged: s.notificationsEnabled
+                  ? (on) =>
+                      ref.read(settingsProvider.notifier).setStreakReminders(on)
+                  : null,
+            ),
+            ListTile(
+              title: const Text('Streak reminder time'),
+              subtitle: Text(s.streakReminderTime.format(context)),
+              enabled: s.notificationsEnabled && s.streakReminders,
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _pickStreakTime(context, ref, s.streakReminderTime),
+            ),
+            const Divider(),
             const _SectionLabel('Privacy'),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -109,6 +143,39 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _setNotificationsEnabled(
+    BuildContext context,
+    WidgetRef ref,
+    bool on,
+  ) async {
+    try {
+      await ref.read(settingsProvider.notifier).setNotificationsEnabled(on);
+    } on NotificationException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.message),
+        backgroundColor: context.colors.error,
+        action: e.canOpenSettings
+            ? SnackBarAction(
+                label: 'Open settings',
+                onPressed: () =>
+                    ref.read(notificationServiceProvider).openSettings(),
+              )
+            : null,
+      ));
+    }
+  }
+
+  Future<void> _pickStreakTime(
+    BuildContext context,
+    WidgetRef ref,
+    TimeOfDay current,
+  ) async {
+    final picked = await showTimePicker(context: context, initialTime: current);
+    if (picked == null) return;
+    await ref.read(settingsProvider.notifier).setStreakReminderTime(picked);
   }
 }
 

@@ -11,16 +11,24 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/pixel_box.dart';
 import '../../../shared/widgets/pixel_button.dart';
 import '../../../shared/widgets/pixel_progress_bar.dart';
+import '../../achievements/presentation/achievement_card.dart';
+import '../../achievements/providers/achievements_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../history/models/history_models.dart';
 import '../../history/providers/history_provider.dart';
+import '../../profile/models/profile_models.dart';
+import '../../profile/presentation/stat_bar.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../../store/providers/store_provider.dart';
 import '../models/avatar_models.dart';
 import '../providers/avatar_provider.dart';
 import 'avatar_preview.dart';
 
 /// Hero overview: the customized avatar (with a Customize entry point next to
-/// it), the player's item collection, and their stats.
+/// it), the player's item collection, level/stats, life stats, an
+/// achievements preview, and their logged quest history — the single
+/// consolidated identity + progress screen (formerly split across Hero and
+/// Stats/Profile tabs).
 class HeroScreen extends ConsumerWidget {
   const HeroScreen({super.key});
 
@@ -37,39 +45,70 @@ class HeroScreen extends ConsumerWidget {
             tooltip: 'Shop',
             onPressed: () => context.push(RouteNames.store),
           ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => context.push(RouteNames.settings),
+          ),
         ],
       ),
       body: appearance.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
+        error: (_, _) => ErrorView(
           message: 'Could not load your avatar.',
           onRetry: () => ref.invalidate(appearanceProvider),
         ),
-        data: (a) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _AvatarRow(appearance: a),
-            const SizedBox(height: 24),
-            _SectionLabel('ITEMS'),
-            const SizedBox(height: 8),
-            const _ItemsSection(),
-            const SizedBox(height: 24),
-            _SectionLabel('STATS'),
-            const SizedBox(height: 8),
-            const _StatsSection(),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                const Expanded(child: _SectionLabel('LOGGED QUESTS')),
-                TextButton(
-                  onPressed: () => context.push(RouteNames.history),
-                  child: const Text('See all'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const _LoggedQuestsCarousel(),
-          ],
+        data: (a) => RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(appearanceProvider);
+            ref.invalidate(storeProvider);
+            ref.invalidate(historyProvider);
+            ref.invalidate(statsProvider);
+            ref.invalidate(achievementsProvider);
+            await ref.read(authStateProvider.notifier).refreshUser();
+          },
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _AvatarRow(appearance: a),
+              const SizedBox(height: 24),
+              _SectionLabel('ITEMS'),
+              const SizedBox(height: 8),
+              const _ItemsSection(),
+              const SizedBox(height: 24),
+              _SectionLabel('STATS'),
+              const SizedBox(height: 8),
+              const _StatsSection(),
+              const SizedBox(height: 24),
+              _SectionLabel('LIFE STATS'),
+              const SizedBox(height: 8),
+              const _LifeStatsSection(),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  const Expanded(child: _SectionLabel('ACHIEVEMENTS')),
+                  TextButton(
+                    onPressed: () => context.push(RouteNames.achievements),
+                    child: const Text('See all'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const _RecentAchievements(),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  const Expanded(child: _SectionLabel('LOGGED QUESTS')),
+                  TextButton(
+                    onPressed: () => context.push(RouteNames.history),
+                    child: const Text('See all'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const _LoggedQuestsCarousel(),
+            ],
+          ),
         ),
       ),
     );
@@ -88,7 +127,7 @@ class _LoggedQuestsCarousel extends ConsumerWidget {
         height: 150,
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Text(
+      error: (_, _) => Text(
         'Could not load your quests.',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
@@ -104,7 +143,7 @@ class _LoggedQuestsCarousel extends ConsumerWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (_, i) => _LoggedQuestCard(item: items[i]),
           ),
         );
@@ -255,7 +294,7 @@ class _ItemsSection extends ConsumerWidget {
         height: 80,
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Text(
+      error: (_, _) => Text(
         'Could not load your items.',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
@@ -366,6 +405,12 @@ class _StatsSection extends ConsumerWidget {
                 color: p.actionQuest,
                 label: '${user.currentStreak} day streak',
               ),
+              const SizedBox(width: 8),
+              _StatChip(
+                icon: Icons.emoji_events,
+                color: p.rarityLegendary,
+                label: 'Best ${user.longestStreak}',
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -416,6 +461,89 @@ class _StatChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Per-life-stat bars (social/creativity/exploration/knowledge/...), scaled
+/// against the player's strongest stat.
+class _LifeStatsSection extends ConsumerWidget {
+  const _LifeStatsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(statsProvider);
+    return stats.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.all(8),
+        child: LinearProgressIndicator(),
+      ),
+      error: (_, _) => Text(
+        'Could not load stats.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      data: (LifeStats s) {
+        if (s.values.isEmpty) {
+          return Text(
+            'No stats yet.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          );
+        }
+        final max = s.values.values.reduce((a, b) => a > b ? a : b);
+        return Column(
+          children: [
+            for (final key in s.orderedKeys)
+              StatBar(
+                label: _label(key),
+                value: s.values[key]!,
+                maxValue: max,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _label(String key) =>
+      key.isEmpty ? key : '${key[0].toUpperCase()}${key.substring(1)}';
+}
+
+class _RecentAchievements extends ConsumerWidget {
+  const _RecentAchievements();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final achievements = ref.watch(achievementsProvider);
+    return achievements.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.all(8),
+        child: LinearProgressIndicator(),
+      ),
+      error: (_, _) => Text(
+        'Could not load achievements.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      data: (items) {
+        final unlocked = items.where((a) => a.isUnlocked).take(5).toList();
+        if (unlocked.isEmpty) {
+          return Text(
+            'No achievements unlocked yet.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          );
+        }
+        return SizedBox(
+          height: 130,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: unlocked.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            itemBuilder: (_, i) => SizedBox(
+              width: 220,
+              child: AchievementCard(achievement: unlocked[i]),
+            ),
+          ),
+        );
+      },
     );
   }
 }

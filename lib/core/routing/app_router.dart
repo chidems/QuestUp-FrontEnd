@@ -12,7 +12,6 @@ import '../../features/weekly/presentation/weekly_quest_screen.dart';
 import '../../features/avatar/presentation/hero_screen.dart';
 import '../../features/avatar/presentation/customize_screen.dart';
 import '../../features/store/presentation/store_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/achievements/presentation/achievements_screen.dart';
 import '../../features/history/presentation/quest_history_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -141,12 +140,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: RouteNames.avatar,
               builder: (_, __) => const HeroScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: RouteNames.profile,
-              builder: (_, __) => const ProfileScreen(),
             ),
           ]),
         ],
