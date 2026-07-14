@@ -65,6 +65,35 @@ const _flagGlyph = [
   '............',
 ];
 
+/// The 12x12 sprite for a quest category (shared with the map's pin
+/// renderer, which paints the same glyphs onto marker bitmaps).
+List<String> categoryGlyph(String questType) {
+  switch (questType) {
+    case QuestType.location:
+      return _pinGlyph;
+    case QuestType.social:
+      return _socialGlyph;
+    case QuestType.action:
+      return _boltGlyph;
+    default:
+      return _flagGlyph;
+  }
+}
+
+/// The accent color for a quest category.
+Color categoryColor(AppPalette p, String questType) {
+  switch (questType) {
+    case QuestType.location:
+      return p.locationQuest;
+    case QuestType.social:
+      return p.socialQuest;
+    case QuestType.action:
+      return p.actionQuest;
+    default:
+      return p.primaryLight;
+  }
+}
+
 /// Square pixel badge showing a quest category's sprite and accent color.
 class CategoryIcon extends StatelessWidget {
   final String questType;
@@ -75,7 +104,7 @@ class CategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.colors;
-    final color = _color(palette);
+    final color = categoryColor(palette, questType);
     return Container(
       width: size,
       height: size,
@@ -84,33 +113,13 @@ class CategoryIcon extends StatelessWidget {
         borderRadius: AppRadius.rSmall,
         border: Border.all(color: color, width: 1.5),
       ),
-      child: Center(child: PixelGlyph(_glyph, color: color, size: size * 0.55)),
+      child: Center(
+        child: PixelGlyph(
+          categoryGlyph(questType),
+          color: color,
+          size: size * 0.55,
+        ),
+      ),
     );
-  }
-
-  Color _color(AppPalette p) {
-    switch (questType) {
-      case QuestType.location:
-        return p.locationQuest;
-      case QuestType.social:
-        return p.socialQuest;
-      case QuestType.action:
-        return p.actionQuest;
-      default:
-        return p.primaryLight;
-    }
-  }
-
-  List<String> get _glyph {
-    switch (questType) {
-      case QuestType.location:
-        return _pinGlyph;
-      case QuestType.social:
-        return _socialGlyph;
-      case QuestType.action:
-        return _boltGlyph;
-      default:
-        return _flagGlyph;
-    }
   }
 }

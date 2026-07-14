@@ -112,6 +112,10 @@ class NpcApi {
           xpReward: 60,
           coinReward: 30,
           status: 'active',
+          // Demo coordinate ~0.3 km NE of the mock center, for the Map tab.
+          targetLatitude: 49.2849,
+          targetLongitude: -123.1172,
+          distanceMeters: 320,
           npcId: 'npc1',
         ),
       );
