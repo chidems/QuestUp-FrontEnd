@@ -14,3 +14,7 @@ final profileRepositoryProvider = Provider<ProfileRepository>(
 final statsProvider = FutureProvider<LifeStats>(
   (ref) => ref.read(profileRepositoryProvider).getStats(),
 );
+
+final userProfileProvider = FutureProvider<UserProfile>(
+  (ref) => ref.read(profileRepositoryProvider).getProfile(),
+);

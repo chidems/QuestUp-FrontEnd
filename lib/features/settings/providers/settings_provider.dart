@@ -121,6 +121,15 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     state = AsyncData(current.copyWith(categories: next));
   }
 
+  /// Replaces the enabled quest categories wholesale (used by onboarding so
+  /// its picks and the Settings checkboxes stay one source of truth).
+  Future<void> setCategories(Set<String> categories) async {
+    final current = state.value;
+    if (current == null) return;
+    await _cache?.setString(_kCategories, categories.join(','));
+    state = AsyncData(current.copyWith(categories: categories));
+  }
+
   /// Turning this on requests OS permission first; the setting only flips to
   /// on if permission is granted. Throws [NotificationException] on denial
   /// so the settings screen can show an actionable message — the caller must

@@ -14,6 +14,8 @@ import '../../features/avatar/presentation/customize_screen.dart';
 import '../../features/store/presentation/store_screen.dart';
 import '../../features/achievements/presentation/achievements_screen.dart';
 import '../../features/history/presentation/quest_history_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/providers/onboarding_status_provider.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
@@ -47,6 +49,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final notifier = _AuthChangeNotifier();
 
   ref.listen(authStateProvider, (_, __) => notifier.notify());
+  // Re-evaluate redirects when onboarding completes (or becomes pending),
+  // so finishing the wizard naturally falls through to /home.
+  ref.listen(onboardingPendingProvider, (_, __) => notifier.notify());
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
@@ -65,9 +70,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authValue.value != null;
       final onAuthScreen = state.matchedLocation == RouteNames.login ||
           state.matchedLocation == RouteNames.register;
+      final onOnboarding = state.matchedLocation == RouteNames.onboarding;
 
       if (!isLoggedIn && !onAuthScreen) return RouteNames.login;
-      if (isLoggedIn && onAuthScreen) return RouteNames.home;
+      if (isLoggedIn) {
+        // Fresh registrations detour through the preferences wizard before
+        // landing on the feed; everyone else skips straight past it.
+        final pending = ref.read(onboardingPendingProvider);
+        if (pending.isLoading) return null;
+        final needsOnboarding = pending.value ?? false;
+        if (needsOnboarding && !onOnboarding) return RouteNames.onboarding;
+        if (!needsOnboarding && onOnboarding) return RouteNames.home;
+        if (onAuthScreen) return RouteNames.home;
+      }
       return null;
     },
     routes: [
@@ -82,6 +97,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.register,
         builder: (_, __) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.onboarding,
+        builder: (_, __) => const OnboardingScreen(),
       ),
       GoRoute(
         path: RouteNames.questDetail,

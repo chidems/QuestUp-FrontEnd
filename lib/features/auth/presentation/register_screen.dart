@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/pixel_button.dart';
+import '../../onboarding/providers/onboarding_status_provider.dart';
 import '../providers/auth_provider.dart';
 import 'auth_shell.dart';
 
@@ -35,11 +36,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
+    // Flag the upcoming session as a fresh registration so the router sends
+    // it through onboarding (set before the auth state flips — see
+    // OnboardingStatusNotifier.expectNewUser).
+    OnboardingStatusNotifier.expectNewUser();
     await ref.read(authStateProvider.notifier).register(
           _emailController.text.trim(),
           _displayNameController.text.trim(),
           _passwordController.text,
         );
+    if (ref.read(authStateProvider).hasError) {
+      OnboardingStatusNotifier.cancelExpectNewUser();
+    }
   }
 
   @override

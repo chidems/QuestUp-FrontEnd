@@ -1,3 +1,36 @@
+/// Backend quest preferences from GET/PUT /profile. Only the fields the app
+/// edits today; the backend has more (home coords, sharing flags) that pass
+/// through untouched because PUT only sends what's provided.
+class UserProfile {
+  final double preferredRadiusKm;
+  final int? preferredDifficulty;
+  final List<String> preferredQuestTypes;
+
+  const UserProfile({
+    required this.preferredRadiusKm,
+    this.preferredDifficulty,
+    required this.preferredQuestTypes,
+  });
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
+        preferredRadiusKm:
+            (json['preferred_radius_km'] as num?)?.toDouble() ?? 2.0,
+        preferredDifficulty: (json['preferred_difficulty'] as num?)?.toInt(),
+        preferredQuestTypes: (json['preferred_quest_types'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const ['location', 'social', 'action'],
+      );
+
+  /// Body for PUT /profile — only the preference fields this app sets.
+  Map<String, dynamic> toUpdateJson() => {
+        'preferred_radius_km': preferredRadiusKm,
+        if (preferredDifficulty != null)
+          'preferred_difficulty': preferredDifficulty,
+        'preferred_quest_types': preferredQuestTypes,
+      };
+}
+
 class LifeStats {
   /// stat name -> points (e.g. social, creativity, exploration, knowledge).
   /// Kept as a map so the backend can evolve the set of stats.
