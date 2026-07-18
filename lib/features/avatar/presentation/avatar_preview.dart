@@ -20,12 +20,12 @@ Widget _sprite(SpriteAsset sprite, double w, double h) => Image.asset(
 /// Body-only sprite layers (skin, eyes, bottom, top, hair) positioned on the
 /// 141x286 canvas, centred horizontally and offset by [dx]. Shared by the full
 /// preview and the circular head crop so the empirical anchors live in one
-/// place. The sprites carry no offset metadata and were drawn at differing
-/// scales, so each slot is anchored and scaled empirically (see
-/// tool/composite_test.ps1 for the tuning harness): eyes scale 0.62 top y=58;
-/// hair scale 1.42 top y=-6 so it wraps the oversized chibi head; tops scale
-/// 1.6 (height-capped so floor-length robes keep the feet visible) from the
-/// shoulder line y=124; bottoms scale 1.45 from the waistband y=184.
+/// place. Eyes and hair are anchored empirically (eyes scale 0.62 top y=58;
+/// hair scale 1.42 top y=-6 so it wraps the oversized chibi head). Clothes
+/// are anchored by their opaque content box (see [ClothingAsset]): all
+/// garment sheets share one drawing scale, and 1.30 maps garment pixels to
+/// body pixels, so each garment keeps its drawn silhouette — tops hang from
+/// the collar line, bottoms from the waistband.
 List<Widget> _bodyLayers(AvatarAppearance appearance, {double dx = 0}) {
   final skin = AssetCatalog.skinById[appearance.skinId] ?? kSkinTones.first;
   final eyes = AssetCatalog.eyesById[appearance.eyesId] ?? kEyeColors.first;
@@ -43,16 +43,27 @@ List<Widget> _bodyLayers(AvatarAppearance appearance, {double dx = 0}) {
     );
   }
 
-  // Tops are stretched to span the shoulder line (>= body width) so the base
-  // body's bare arms stay covered, while height keeps the original capped scale
-  // so floor-length pieces still leave the feet visible.
-  Widget topLayer(SpriteAsset sprite) {
-    final fit = math.min(1.6, 150 / sprite.h);
-    final h = sprite.h * fit;
-    final w = math.max(sprite.w * fit, _bodyW * 1.04);
+  // The garment's content box is centred on the body and hung from the slot's
+  // anchor line. Width uses the shared 1.30 scale times the garment's
+  // precomputed fitWidthScale (so sleeves/pant legs cover the body's flared
+  // arms/legs); height alone is compressed when a long garment would
+  // otherwise bury the feet, so pants stay full-width at the hip but end
+  // above the toes.
+  Widget clothingLayer(
+    ClothingAsset sprite, {
+    required double anchorY,
+    required double hemMaxY,
+  }) {
+    const scale = 1.30;
+    final wScale = scale * sprite.fitWidthScale;
+    final hScale = math.min(scale, (hemMaxY - anchorY) / sprite.contentH);
+    final w = sprite.w * wScale;
+    final h = sprite.h * hScale;
     return Positioned(
-      left: dx + (_bodyW - w) / 2,
-      top: 124,
+      left: dx +
+          _bodyW / 2 -
+          (sprite.contentL + sprite.contentW / 2) * wScale,
+      top: anchorY - sprite.contentT * hScale,
       child: _sprite(sprite, w, h),
     );
   }
@@ -60,8 +71,12 @@ List<Widget> _bodyLayers(AvatarAppearance appearance, {double dx = 0}) {
   return [
     layer(skin, top: 0),
     layer(eyes, top: 58, scale: 0.62),
-    if (bottom != null) layer(bottom, top: 184, scale: 1.45),
-    if (top != null) topLayer(top),
+    // Waistband line y=182; hems capped above the toes.
+    if (bottom != null)
+      clothingLayer(bottom, anchorY: 182, hemMaxY: 272),
+    // Collar line y=124 — high enough that the collar covers the body's
+    // shoulder slope, which starts at y~128.
+    if (top != null) clothingLayer(top, anchorY: 124, hemMaxY: 262),
     layer(hair, top: -6, scale: 1.42),
   ];
 }

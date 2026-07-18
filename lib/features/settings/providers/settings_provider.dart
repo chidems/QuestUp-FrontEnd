@@ -112,17 +112,8 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     state = AsyncData(current.copyWith(radiusKm: km));
   }
 
-  Future<void> toggleCategory(String type) async {
-    final current = state.value;
-    if (current == null) return;
-    final next = {...current.categories};
-    next.contains(type) ? next.remove(type) : next.add(type);
-    await _cache?.setString(_kCategories, next.join(','));
-    state = AsyncData(current.copyWith(categories: next));
-  }
-
-  /// Replaces the enabled quest categories wholesale (used by onboarding so
-  /// its picks and the Settings checkboxes stay one source of truth).
+  /// Replaces the enabled quest categories wholesale (set once by
+  /// onboarding; not user-editable afterwards).
   Future<void> setCategories(Set<String> categories) async {
     final current = state.value;
     if (current == null) return;

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../data/asset_catalog.dart';
+
 class ItemType {
   static const String top = 'top';
   static const String bottom = 'bottom';
@@ -38,6 +40,10 @@ class AvatarItem {
     this.isEquipped = false,
   });
 
+  /// Whether this item has real art to show — a bundled sprite or a hosted
+  /// image — rather than falling back to the generic placeholder glyph.
+  bool get hasArt => asset != null || (imageUrl?.isNotEmpty ?? false);
+
   AvatarItem copyWith({bool? isOwned, bool? isEquipped}) => AvatarItem(
         id: id,
         name: name,
@@ -59,6 +65,12 @@ class AvatarItem {
         rarity: json['rarity'] as String? ?? 'common',
         priceCoins: (json['price_coins'] as num?)?.toInt() ?? 0,
         imageUrl: json['image_url'] as String?,
+        // The real backend has no image hosting yet, but every seeded item
+        // carries a stable pixel_asset_key. Most items reuse the existing
+        // 84-item mock catalog (pixel_asset_key == that catalog's id, e.g.
+        // 'item_017') and resolve to its bundled art; items with no catalog
+        // counterpart fall back to the placeholder glyph, same as mock mode.
+        asset: AssetCatalog.itemById[json['pixel_asset_key'] as String?]?.asset,
         isOwned: json['is_owned'] as bool? ?? false,
         isEquipped: json['is_equipped'] as bool? ?? false,
       );

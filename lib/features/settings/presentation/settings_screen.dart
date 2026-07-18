@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_palette.dart';
-import '../../../core/constants/quest_constants.dart';
 import '../../../core/location/location_service.dart';
 import '../../../core/notifications/notification_service.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -9,12 +8,6 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../npc/providers/walking_session_provider.dart';
 import '../providers/settings_provider.dart';
-
-const _categoryLabels = {
-  QuestType.location: 'Location quests',
-  QuestType.social: 'Social quests',
-  QuestType.action: 'Action quests',
-};
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -48,13 +41,6 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) =>
                   ref.read(settingsProvider.notifier).setRadius(v),
             ),
-            for (final type in _categoryLabels.keys)
-              CheckboxListTile(
-                title: Text(_categoryLabels[type]!),
-                value: s.categories.contains(type),
-                onChanged: (_) =>
-                    ref.read(settingsProvider.notifier).toggleCategory(type),
-              ),
             const Divider(),
             const _SectionLabel('Appearance'),
             SwitchListTile(

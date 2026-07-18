@@ -55,8 +55,8 @@ class Quest {
       xpReward: (json['xp_reward'] as num?)?.toInt() ?? 0,
       coinReward: (json['coin_reward'] as num?)?.toInt() ?? 0,
       status: json['status'] as String? ?? 'active',
-      targetLatitude: (json['target_latitude'] as num?)?.toDouble(),
-      targetLongitude: (json['target_longitude'] as num?)?.toDouble(),
+      targetLatitude: (json['target_lat'] as num?)?.toDouble(),
+      targetLongitude: (json['target_lng'] as num?)?.toDouble(),
       targetPlaceName: json['target_place_name'] as String?,
       distanceMeters: (json['distance_meters'] as num?)?.toDouble(),
       expiresAt: json['expires_at'] != null

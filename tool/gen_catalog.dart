@@ -8,6 +8,8 @@
 
 import 'dart:io';
 
+import 'package:image/image.dart' as img;
+
 const _outPath = 'lib/features/avatar/data/asset_catalog.g.dart';
 
 /// Hand-assigned names for sprites/items/item_001..084 (QA-sheet order).
@@ -139,8 +141,25 @@ class ClothingAsset extends SpriteAsset {
   final String style;
   final String rarity;
 
+  /// Opaque-pixel bounding box within the sprite (the garment itself,
+  /// excluding transparent padding). Used to anchor the garment on the body.
+  final int contentL;
+  final int contentT;
+  final int contentW;
+  final int contentH;
+
+  /// Extra horizontal stretch (>= 1.0) so the garment covers the base body's
+  /// flared arms/legs where the garment claims to cover them. The garment
+  /// sheets were drawn for a slimmer template than the chibi body, so
+  /// sleeved tops and pants need widening or skin pokes out at the sides;
+  /// fitted pieces (tanks, corsets) stay at 1.0. Computed against the body
+  /// silhouette at generation time — see _fitWidthScale in gen_catalog.dart.
+  final double fitWidthScale;
+
   const ClothingAsset(super.id, super.name, super.asset, super.w, super.h,
-      this.slot, this.style, this.rarity);
+      this.slot, this.style, this.rarity,
+      this.contentL, this.contentT, this.contentW, this.contentH,
+      this.fitWidthScale);
 }
 
 class ItemAsset extends SpriteAsset {
@@ -226,9 +245,11 @@ void _emitClothes(StringBuffer out) {
           final name =
               '$label ${slot == 'top' ? 'Top' : 'Bottom'} ${n.toString().padLeft(2, '0')}';
           final (w, h) = _pngSize(f);
+          final (cl, ct, cw, ch) = _contentBox(f);
+          final fit = _fitWidthScale(f, slot);
           out.writeln(
               "  ClothingAsset('$id', '$name', '${_assetPath(f)}', $w, $h, "
-              "'$slot', '$style', '$rarity'),");
+              "'$slot', '$style', '$rarity', $cl, $ct, $cw, $ch, $fit),");
         }
       }
     }
@@ -276,6 +297,99 @@ String _humanize(String s) => s
     .split('_')
     .map((w) => '${w[0].toUpperCase()}${w.substring(1)}')
     .join(' ');
+
+/// The base body silhouette (any skin tone — they share one outline), used
+/// to compute per-garment fit widening. Row spans are in body-canvas pixels.
+class _BodySpans {
+  static late final List<int> full = _spans(0, 141);
+  // Legs only: x-window excludes the fists hanging beside the hips.
+  static late final List<int> legs = _spans(30, 111);
+
+  static List<int> _spans(int x0, int x1) {
+    final im = img.decodePng(
+        File('sprites/avatars/skin_tones/light.png').readAsBytesSync())!;
+    return List.generate(im.height, (y) {
+      int minX = -1, maxX = -1;
+      for (var x = x0; x < x1 && x < im.width; x++) {
+        if (im.getPixel(x, y).a > 10) {
+          if (minX < 0) minX = x;
+          maxX = x;
+        }
+      }
+      return minX < 0 ? 0 : maxX - minX + 1;
+    });
+  }
+}
+
+/// How much wider (>= 1.0) a garment must render so the body doesn't poke
+/// out at the sides. Mirrors AvatarPreview's layout: garments are placed at
+/// scale 1.30 with tops hung from y=124 and bottoms from y=182. For each
+/// garment row, if the garment claims coverage there but is narrower than
+/// the body, the deficit sets the widening factor:
+///  - tops: body rows 162-198 (upper arms through wrists); only rows where
+///    the garment already extends past the torso (>= 85px scaled) count, so
+///    tanks and other fitted pieces stay untouched.
+///  - bottoms: body rows 218-262 (legs above the feet).
+/// Garment row spans use a rolling max (+-3 rows) so thin detail rows
+/// (belts, drawstrings) don't inflate the factor.
+double _fitWidthScale(File f, String slot) {
+  const scale = 1.30;
+  final anchor = slot == 'top' ? 124 : 182;
+  final im = img.decodePng(f.readAsBytesSync())!;
+  final spans = List.generate(im.height, (y) {
+    int minX = -1, maxX = -1;
+    for (var x = 0; x < im.width; x++) {
+      if (im.getPixel(x, y).a > 10) {
+        if (minX < 0) minX = x;
+        maxX = x;
+      }
+    }
+    return minX < 0 ? 0 : maxX - minX + 1;
+  });
+  final contentTop = spans.indexWhere((s) => s > 0);
+  var fit = 1.0;
+  for (var r = contentTop; r < im.height; r++) {
+    if (spans[r] == 0) continue;
+    var smoothed = 0;
+    for (var rr = r - 3; rr <= r + 3; rr++) {
+      if (rr >= 0 && rr < im.height && spans[rr] > smoothed) {
+        smoothed = spans[rr];
+      }
+    }
+    final g = smoothed * scale;
+    final y = (anchor + (r - contentTop) * scale).round();
+    if (y < 0 || y >= _BodySpans.full.length) continue;
+    final int req;
+    if (slot == 'top') {
+      if (y < 162 || y > 198 || g < 85) continue;
+      req = _BodySpans.full[y] + 4;
+    } else {
+      if (y < 218 || y > 262) continue;
+      req = _BodySpans.legs[y] + 4;
+    }
+    if (g < req && req / g > fit) fit = req / g;
+  }
+  final cap = slot == 'top' ? 1.45 : 1.30;
+  return double.parse((fit > cap ? cap : fit).toStringAsFixed(3));
+}
+
+/// Bounding box of pixels with alpha > 10 (left, top, width, height).
+/// This is the garment itself minus the transparent padding, which varies
+/// per sprite — AvatarPreview anchors garments on the body by this box.
+(int, int, int, int) _contentBox(File f) {
+  final im = img.decodePng(f.readAsBytesSync())!;
+  int minX = im.width, minY = im.height, maxX = -1, maxY = -1;
+  for (final p in im) {
+    if (p.a > 10) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+  }
+  if (maxX < 0) throw StateError('fully transparent sprite: ${f.path}');
+  return (minX, minY, maxX - minX + 1, maxY - minY + 1);
+}
 
 /// Reads width/height from the PNG IHDR chunk (bytes 16..23, big-endian).
 (int, int) _pngSize(File f) {

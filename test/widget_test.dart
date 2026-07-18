@@ -180,27 +180,30 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
-  test('NPCEncounter.fromJson parses the nested quest offer', () {
+  test('NPCEncounter.fromJson parses the /npc/spawn/check offer shape', () {
+    // Mirrors the real backend response: {"npc_spawned": true, "offer": {...}}
+    // where the offer is a flat NPCQuestOffer row (generated_title etc.).
     final encounter = NPCEncounter.fromJson({
-      'id': 'npc1',
-      'npc_name': 'Old Merchant Finn',
-      'message': 'Fancy a side quest?',
-      'encounter_chance_used': 0.7,
-      'quest_offer': {
+      'npc_spawned': true,
+      'offer': {
         'id': 'npc-q1',
-        'title': 'Deliver a kind word',
-        'quest_type': 'social',
-        'source': 'npc',
+        'npc_id': 'npc1',
+        'generated_title': 'Deliver a kind word',
+        'generated_description': 'Fancy a side quest?',
         'xp_reward': 60,
         'coin_reward': 30,
+        'status': 'offered',
+        'expires_at': '2026-07-17T12:00:00Z',
       },
     });
 
-    expect(encounter.npcName, 'Old Merchant Finn');
-    expect(encounter.encounterChanceUsed, 0.7);
+    expect(encounter.id, 'npc-q1');
+    expect(encounter.message, 'Fancy a side quest?');
+    expect(encounter.expiresAt, isNotNull);
     expect(encounter.questOffer?.title, 'Deliver a kind word');
     expect(encounter.questOffer?.source, 'npc');
     expect(encounter.questOffer?.xpReward, 60);
+    expect(encounter.questOffer?.npcId, 'npc1');
   });
 
   test('Achievement.fromJson defaults progress to 1.0 when unlocked', () {
