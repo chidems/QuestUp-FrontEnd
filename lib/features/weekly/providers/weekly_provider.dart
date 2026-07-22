@@ -19,8 +19,11 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyData> {
 
   Future<WeeklyData> _load() async {
     final repo = ref.read(weeklyRepositoryProvider);
-    // The community quest id is needed before posts can be fetched.
+    // The community quest id is needed before posts can be fetched. No
+    // active weekly quest (e.g. between weekly cycles) is a normal state.
     final status = await repo.getWeeklyQuest();
+    if (status == null) return const WeeklyData(status: null, photos: []);
+
     final photos = await repo.getPosts(status.quest.id);
     // The backend's is_completed is never sent (see WeeklyQuestStatus.fromJson);
     // derive it by checking whether the current user already has a post here.
@@ -48,8 +51,11 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyData> {
   }) async {
     final repo = ref.read(weeklyRepositoryProvider);
     // Resolve the community quest id from current state, else fetch it.
-    final weeklyQuestId =
-        state.value?.status.quest.id ?? (await repo.getWeeklyQuest()).quest.id;
+    final weeklyQuestId = state.value?.status?.quest.id ??
+        (await repo.getWeeklyQuest())?.quest.id;
+    if (weeklyQuestId == null) {
+      throw StateError('No active weekly community quest to share to.');
+    }
     await repo.submit(
       weeklyQuestId: weeklyQuestId,
       userQuestId: userQuestId,

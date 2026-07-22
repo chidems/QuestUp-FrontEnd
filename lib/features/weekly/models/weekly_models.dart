@@ -64,8 +64,9 @@ class WeeklyQuestStatus {
 }
 
 /// Combined payload for the weekly screen: the quest+status and the feed.
+/// [status] is null when no weekly community quest is currently active.
 class WeeklyData {
-  final WeeklyQuestStatus status;
+  final WeeklyQuestStatus? status;
   final List<WeeklyPhotoPost> photos;
 
   const WeeklyData({required this.status, required this.photos});

@@ -39,36 +39,64 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quest = data.status.quest;
+    final status = data.status;
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        WeeklyQuestCard(
-          quest: quest,
-          isCompleted: data.status.isCompleted,
-          onTap: () => context.push('/quests/${quest.id}'),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'COMMUNITY PHOTOS',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: context.colors.textSecondary,
-                letterSpacing: 1.5,
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 8),
-        if (data.photos.isEmpty)
-          _EmptyPhotos()
+        if (status == null)
+          const _NoActiveQuest()
         else
-          ...data.photos.map(
-            (p) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _PhotoCard(post: p),
-            ),
+          WeeklyQuestCard(
+            quest: status.quest,
+            isCompleted: status.isCompleted,
+            onTap: () => context.push('/quests/${status.quest.id}'),
           ),
+        if (status != null) ...[
+          const SizedBox(height: 24),
+          Text(
+            'COMMUNITY PHOTOS',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: context.colors.textSecondary,
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          if (data.photos.isEmpty)
+            _EmptyPhotos()
+          else
+            ...data.photos.map(
+              (p) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _PhotoCard(post: p),
+              ),
+            ),
+        ],
       ],
+    );
+  }
+}
+
+class _NoActiveQuest extends StatelessWidget {
+  const _NoActiveQuest();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Icon(Icons.hourglass_empty, size: 40, color: context.colors.textMuted),
+          const SizedBox(height: 12),
+          Text(
+            'No weekly quest right now.\nCheck back soon!',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
     );
   }
 }

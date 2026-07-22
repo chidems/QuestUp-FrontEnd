@@ -9,11 +9,16 @@ class WeeklyApi {
 
   WeeklyApi(this._dio);
 
-  Future<WeeklyQuestStatus> getWeeklyQuest() async {
+  // The backend returns `null` (200) when no weekly community quest is
+  // currently active (e.g. between weekly cycles) — a legitimate state, not
+  // an error.
+  Future<WeeklyQuestStatus?> getWeeklyQuest() async {
     if (AppConfig.useMockApi) return _mockStatus();
     try {
       final response = await _dio.get('/community/weekly/current');
-      return WeeklyQuestStatus.fromJson(response.data as Map<String, dynamic>);
+      final data = response.data;
+      if (data == null) return null;
+      return WeeklyQuestStatus.fromJson(data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }

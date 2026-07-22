@@ -21,7 +21,7 @@ Widget _sprite(SpriteAsset sprite, double w, double h) => Image.asset(
 /// 141x286 canvas, centred horizontally and offset by [dx]. Shared by the full
 /// preview and the circular head crop so the empirical anchors live in one
 /// place. Eyes and hair are anchored empirically (eyes scale 0.62 top y=58;
-/// hair scale 1.42 top y=-6 so it wraps the oversized chibi head). Clothes
+/// hair scale 1.55 top y=-7 so it wraps the oversized chibi head). Clothes
 /// are anchored by their opaque content box (see [ClothingAsset]): all
 /// garment sheets share one drawing scale, and 1.30 maps garment pixels to
 /// body pixels, so each garment keeps its drawn silhouette — tops hang from
@@ -77,7 +77,7 @@ List<Widget> _bodyLayers(AvatarAppearance appearance, {double dx = 0}) {
     // Collar line y=124 — high enough that the collar covers the body's
     // shoulder slope, which starts at y~128.
     if (top != null) clothingLayer(top, anchorY: 124, hemMaxY: 262),
-    layer(hair, top: -6, scale: 1.42),
+    layer(hair, top: -7, scale: 1.55),
   ];
 }
 

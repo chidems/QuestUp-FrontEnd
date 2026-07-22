@@ -6,7 +6,7 @@ class WeeklyRepository {
 
   WeeklyRepository(this._api);
 
-  Future<WeeklyQuestStatus> getWeeklyQuest() => _api.getWeeklyQuest();
+  Future<WeeklyQuestStatus?> getWeeklyQuest() => _api.getWeeklyQuest();
 
   Future<List<WeeklyPhotoPost>> getPosts(String weeklyQuestId) =>
       _api.getPosts(weeklyQuestId);
