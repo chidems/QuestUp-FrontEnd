@@ -7,13 +7,15 @@ import '../../../shared/widgets/pixel_confetti.dart';
 import '../providers/onboarding_flow_provider.dart';
 import 'adventure_level_screen.dart';
 import 'adventurer_reveal_screen.dart';
+import 'avatar_setup_screen.dart';
 import 'onboarding_shell.dart';
 import 'quiz_question_screen.dart';
 
 /// First-run preferences wizard shown once after registration: a welcome
 /// step, a four-question quiz that infers preferred quest types, the
-/// adventure level step (difficulty + radius), and the adventurer-profile
-/// reveal. Skipping submits the defaults collected so far.
+/// adventure level step (difficulty + radius), a hero customization prompt,
+/// and the adventurer-profile reveal. Skipping submits the defaults
+/// collected so far.
 class OnboardingScreen extends ConsumerWidget {
   const OnboardingScreen({super.key});
 
@@ -21,7 +23,8 @@ class OnboardingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final flow = ref.watch(onboardingFlowProvider);
     final notifier = ref.read(onboardingFlowProvider.notifier);
-    const revealStep = quizQuestionCount + 2;
+    const avatarStep = quizQuestionCount + 2;
+    const revealStep = quizQuestionCount + 3;
 
     Future<void> finish() async {
       await notifier.submit();
@@ -39,6 +42,7 @@ class OnboardingScreen extends ConsumerWidget {
           quizQuestions[flow.step - 1].prompt
         ),
       const (quizQuestionCount + 1) => ('SET YOUR ADVENTURE LEVEL', null),
+      const (avatarStep) => ('SET UP YOUR HERO', null),
       _ => ('YOUR ADVENTURER PROFILE', null),
     };
 
@@ -70,6 +74,8 @@ class OnboardingScreen extends ConsumerWidget {
               ),
             const (quizQuestionCount + 1) =>
               const AdventureLevelStep(key: ValueKey(quizQuestionCount + 1)),
+            const (avatarStep) =>
+              const AvatarSetupStep(key: ValueKey(avatarStep)),
             _ => AdventurerRevealStep(
                 key: const ValueKey(revealStep),
                 onConfirm: finish,

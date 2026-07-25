@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_radius.dart';
-import '../../../core/routing/route_names.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/pixel_button.dart';
 import '../../../shared/widgets/pixel_chip.dart';
 import '../../../shared/widgets/rarity_badge.dart';
+import '../../store/presentation/store_screen.dart';
 import '../../store/providers/store_provider.dart';
 import '../data/asset_catalog.dart';
 import '../models/avatar_models.dart';
@@ -431,7 +430,14 @@ class _NoItemsYet extends StatelessWidget {
             label: 'Open Shop',
             icon: Icons.storefront,
             variant: PixelButtonVariant.navigation,
-            onPressed: () => context.push(RouteNames.store),
+            // A plain Navigator push (not go_router's context.push): this
+            // screen can itself be reached mid-onboarding via a plain push
+            // (see AvatarSetupStep), and go_router's "onboarding still
+            // pending" redirect would otherwise bounce a declarative push
+            // to /store straight back to the wizard.
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const StoreScreen()),
+            ),
           ),
         ],
       ),
