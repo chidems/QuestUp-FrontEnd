@@ -6,11 +6,13 @@ import 'pixel_badge.dart';
 import 'pixel_box.dart';
 
 /// Highlighted card for the shared weekly community quest, with a completion
-/// status badge.
+/// status badge. [onTap] is null while the player's own copy of the quest
+/// isn't known yet, which leaves the card non-interactive rather than opening
+/// a quest screen that cannot load.
 class WeeklyQuestCard extends StatelessWidget {
   final Quest quest;
   final bool isCompleted;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const WeeklyQuestCard({
     super.key,

@@ -11,8 +11,8 @@ void main() {
     expect(kSkinTones, hasLength(16));
     // 24 eye sprites minus 6 near-duplicate colors pruned from the catalog.
     expect(kEyeColors, hasLength(18));
-    expect(kHairStyles, hasLength(112));
-    expect(kClothes, hasLength(465));
+    expect(kHairStyles, hasLength(144));
+    expect(kClothes, hasLength(489));
     expect(kItems, hasLength(84));
 
     final all = [...kSkinTones, ...kEyeColors, ...kHairStyles, ...kClothes, ...kItems];

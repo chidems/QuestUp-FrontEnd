@@ -10,6 +10,7 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/pixel_box.dart';
 import '../../../shared/widgets/pixel_button.dart';
 import '../../quests/models/quest_models.dart';
+import '../../quests/providers/accepted_quests_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/map_providers.dart';
 import 'map_pins.dart';
@@ -205,17 +206,20 @@ class _MapView extends ConsumerWidget {
 }
 
 /// Info card for the tapped pin: category art, title, reward/distance chips,
-/// a source badge for weekly/NPC quests, and a jump to the quest detail.
-class _QuestCard extends StatelessWidget {
+/// a source badge for weekly/NPC quests, an ACTIVE badge once the quest has
+/// been accepted, and a jump to the quest detail.
+class _QuestCard extends ConsumerWidget {
   final Quest quest;
   final VoidCallback onClose;
 
   const _QuestCard({required this.quest, required this.onClose});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.colors;
     final isNpc = quest.source == 'npc';
+    final isActive =
+        isQuestAccepted(quest, ref.watch(acceptedQuestIdsProvider));
 
     return PixelBox(
       padding: const EdgeInsets.all(12),
@@ -292,6 +296,12 @@ class _QuestCard extends StatelessWidget {
                   icon: Icons.flag,
                   color: p.accentTeal,
                   label: 'WEEKLY',
+                ),
+              if (isActive)
+                _InfoChip(
+                  icon: Icons.play_arrow,
+                  color: p.xpColor,
+                  label: 'ACTIVE',
                 ),
             ],
           ),

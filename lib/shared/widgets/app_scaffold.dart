@@ -97,8 +97,8 @@ class _NavItem extends StatelessWidget {
 
     Widget icon = Image.asset(
       asset,
-      width: 30,
-      height: 30,
+      width: 36,
+      height: 36,
       // Pixel art: hard edges, no smoothing.
       filterQuality: FilterQuality.none,
     );
@@ -118,7 +118,10 @@ class _NavItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 6),
+              // Spacing around the glyph is deliberately tight: the icon was
+              // enlarged and the difference reclaimed here so the bar keeps
+              // its original height.
+              const SizedBox(height: 3),
               // Plate slides in behind the active glyph; glyph pops slightly.
               AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
@@ -140,7 +143,7 @@ class _NavItem extends StatelessWidget {
                   child: icon,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               // Tight metrics + scale-down so labels never crop on narrow tabs.
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -155,7 +158,7 @@ class _NavItem extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 5),
             ],
           ),
         ),

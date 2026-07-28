@@ -9,7 +9,7 @@
          after a device reboot. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
-        android:label="quest_up"
+        android:label="Quest Up"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Injected by Gradle from the gitignored android/secrets.properties

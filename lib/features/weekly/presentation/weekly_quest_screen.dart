@@ -6,6 +6,7 @@ import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/weekly_quest_card.dart';
+import '../../quests/providers/quest_feed_provider.dart';
 import '../models/weekly_models.dart';
 import '../providers/weekly_provider.dart';
 
@@ -15,6 +16,11 @@ class WeeklyQuestScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weekly = ref.watch(weeklyProvider);
+    // This screen shows the *community* weekly quest, whose id belongs to
+    // /community/weekly/* and 404s on /quests/{id}. The player's own instance
+    // of that quest comes from the feed — that's the one the quest screen can
+    // load and complete.
+    final userQuestId = ref.watch(questFeedProvider).value?.weeklyQuest?.id;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Weekly Quest')),
@@ -26,7 +32,7 @@ class WeeklyQuestScreen extends ConsumerWidget {
         ),
         data: (data) => RefreshIndicator(
           onRefresh: () => ref.read(weeklyProvider.notifier).refresh(),
-          child: _Body(data: data),
+          child: _Body(data: data, userQuestId: userQuestId),
         ),
       ),
     );
@@ -35,7 +41,8 @@ class WeeklyQuestScreen extends ConsumerWidget {
 
 class _Body extends StatelessWidget {
   final WeeklyData data;
-  const _Body({required this.data});
+  final String? userQuestId;
+  const _Body({required this.data, required this.userQuestId});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +57,9 @@ class _Body extends StatelessWidget {
           WeeklyQuestCard(
             quest: status.quest,
             isCompleted: status.isCompleted,
-            onTap: () => context.push('/quests/${status.quest.id}'),
+            onTap: userQuestId == null
+                ? null
+                : () => context.push('/quests/$userQuestId'),
           ),
         if (status != null) ...[
           const SizedBox(height: 24),

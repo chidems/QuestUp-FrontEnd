@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../quests/providers/accepted_npc_quests_provider.dart';
+import '../../quests/providers/accepted_quests_provider.dart';
 import '../data/npc_api.dart';
 import '../models/npc_models.dart';
 
@@ -34,6 +35,8 @@ class NpcEncounterNotifier extends Notifier<NPCEncounter?> {
     final offer = encounter.questOffer;
     if (offer != null) {
       ref.read(acceptedNpcQuestsProvider.notifier).add(offer);
+      // Accepting the encounter accepts the quest, so it starts out active.
+      ref.read(acceptedQuestIdsProvider.notifier).markAccepted(offer.id);
     }
     state = null;
   }

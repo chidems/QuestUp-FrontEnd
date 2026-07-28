@@ -300,33 +300,36 @@ class _ItemsSection extends ConsumerWidget {
       ),
       data: (items) {
         final owned = items.where((i) => i.isOwned).toList();
-        if (owned.isEmpty) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        // The shop stays reachable whether or not the player owns anything —
+        // owning one item shouldn't hide the way to buy the next.
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (owned.isEmpty)
               Text(
                 'No items yet. Complete quests to earn coins, then gear up!',
                 style: Theme.of(context).textTheme.bodyMedium,
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final item in owned)
+                    _ItemTile(
+                      item: item,
+                      // The appearance stores the catalog key, not the item id.
+                      equipped: equippedIds.contains(item.assetKey ?? item.id),
+                    ),
+                ],
               ),
-              const SizedBox(height: 10),
-              PixelButton(
-                label: 'Open Shop',
-                icon: Icons.storefront,
-                variant: PixelButtonVariant.navigation,
-                onPressed: () => context.push(RouteNames.store),
-              ),
-            ],
-          );
-        }
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final item in owned)
-              _ItemTile(
-                item: item,
-                equipped: equippedIds.contains(item.id),
-              ),
+            const SizedBox(height: 10),
+            PixelButton(
+              label: 'Open Shop',
+              icon: Icons.storefront,
+              variant: PixelButtonVariant.navigation,
+              onPressed: () => context.push(RouteNames.store),
+            ),
           ],
         );
       },

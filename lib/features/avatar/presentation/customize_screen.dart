@@ -367,7 +367,9 @@ class _ItemsGrid extends ConsumerWidget {
         onRetry: () => ref.read(storeProvider.notifier).refresh(),
       ),
       data: (items) {
-        final owned = items.where((i) => i.isOwned).toList();
+        // Only things the avatar can hold — an owned hat has no slot here.
+        final owned =
+            items.where((i) => i.isOwned && i.isHoldable).toList();
         if (owned.isEmpty) return const _NoItemsYet();
         return GridView.builder(
           padding: const EdgeInsets.all(12),
@@ -388,11 +390,15 @@ class _ItemsGrid extends ConsumerWidget {
               );
             }
             final item = owned[i - 1];
+            // Equip by catalog key, not by item id: the avatar preview resolves
+            // the held item through AssetCatalog, and the backend's ids are
+            // UUIDs that aren't in it.
+            final equipId = item.assetKey ?? item.id;
             return _OptionCell(
               label: item.name,
-              selected: item.id == selectedId,
+              selected: equipId == selectedId,
               rarity: item.rarity,
-              onTap: () => onPick(item.id),
+              onTap: () => onPick(equipId),
               child: item.asset == null
                   ? const SizedBox.shrink()
                   : Image.asset(

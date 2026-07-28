@@ -12,6 +12,8 @@ class AcceptedNpcQuestsNotifier extends Notifier<List<Quest>> {
     if (state.any((q) => q.id == quest.id)) return;
     state = [...state, quest];
   }
+
+  void remove(String id) => state = state.where((q) => q.id != id).toList();
 }
 
 final acceptedNpcQuestsProvider =

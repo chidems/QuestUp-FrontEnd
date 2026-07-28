@@ -23,6 +23,8 @@ class StoreApi {
             rarity: item.rarity,
             priceCoins: item.priceCoins,
             asset: item.asset,
+            // Mock ids are catalog ids already.
+            assetKey: item.id,
             isOwned: owned.contains(item.id),
           ),
       ];
@@ -34,6 +36,26 @@ class StoreApi {
       return list
           .map((e) => AvatarItem.fromJson(e as Map<String, dynamic>))
           .toList();
+    } on DioException catch (e) {
+      throw dioErrorToApiException(e);
+    }
+  }
+
+  /// Ids of the avatar items the user owns. The store listing carries no
+  /// ownership flag — the backend keeps that in a separate inventory — so this
+  /// is what makes a purchase show as owned.
+  Future<Set<String>> getOwnedItemIds() async {
+    if (AppConfig.useMockApi) return MockEconomy.ownedItemIds();
+    try {
+      final response = await _dio.get('/inventory');
+      final data = response.data;
+      final list = data is List ? data : (data['items'] as List? ?? []);
+      final ids = <String>{};
+      for (final row in list) {
+        final id = (row as Map<String, dynamic>)['avatar_item_id']?.toString();
+        if (id != null && id.isNotEmpty) ids.add(id);
+      }
+      return ids;
     } on DioException catch (e) {
       throw dioErrorToApiException(e);
     }

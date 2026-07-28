@@ -24,6 +24,11 @@ class AvatarItem {
   final int priceCoins;
   final String? imageUrl;
   final String? asset;
+
+  /// Key into the bundled sprite catalog, used when equipping this item onto
+  /// the avatar. [id] can't serve that purpose against the real backend, where
+  /// it is a database UUID rather than a catalog id.
+  final String? assetKey;
   final bool isOwned;
   final bool isEquipped;
 
@@ -36,6 +41,7 @@ class AvatarItem {
     required this.priceCoins,
     this.imageUrl,
     this.asset,
+    this.assetKey,
     this.isOwned = false,
     this.isEquipped = false,
   });
@@ -43,6 +49,13 @@ class AvatarItem {
   /// Whether this item has real art to show — a bundled sprite or a hosted
   /// image — rather than falling back to the generic placeholder glyph.
   bool get hasArt => asset != null || (imageUrl?.isNotEmpty ?? false);
+
+  /// Whether the avatar can actually hold this item, i.e. it resolves to a
+  /// sprite in the held-item catalog. The backend also sells hats, capes and
+  /// badges; the avatar has no slot for those, so they must not be offered in
+  /// the held-item picker. None of them reach the shop today (they have no
+  /// bundled art), which is exactly why this guard is cheap to keep.
+  bool get isHoldable => AssetCatalog.itemById.containsKey(assetKey ?? id);
 
   AvatarItem copyWith({bool? isOwned, bool? isEquipped}) => AvatarItem(
         id: id,
@@ -53,27 +66,34 @@ class AvatarItem {
         priceCoins: priceCoins,
         imageUrl: imageUrl,
         asset: asset,
+        assetKey: assetKey,
         isOwned: isOwned ?? this.isOwned,
         isEquipped: isEquipped ?? this.isEquipped,
       );
 
-  factory AvatarItem.fromJson(Map<String, dynamic> json) => AvatarItem(
-        id: json['id']?.toString() ?? '',
-        name: json['name'] as String? ?? '',
-        description: json['description'] as String?,
-        itemType: json['item_type'] as String? ?? ItemType.item,
-        rarity: json['rarity'] as String? ?? 'common',
-        priceCoins: (json['price_coins'] as num?)?.toInt() ?? 0,
-        imageUrl: json['image_url'] as String?,
-        // The real backend has no image hosting yet, but every seeded item
-        // carries a stable pixel_asset_key. Most items reuse the existing
-        // 84-item mock catalog (pixel_asset_key == that catalog's id, e.g.
-        // 'item_017') and resolve to its bundled art; items with no catalog
-        // counterpart fall back to the placeholder glyph, same as mock mode.
-        asset: AssetCatalog.itemById[json['pixel_asset_key'] as String?]?.asset,
-        isOwned: json['is_owned'] as bool? ?? false,
-        isEquipped: json['is_equipped'] as bool? ?? false,
-      );
+  factory AvatarItem.fromJson(Map<String, dynamic> json) {
+    // The real backend has no image hosting yet, but every seeded item carries
+    // a stable pixel_asset_key. Most items reuse the existing 84-item mock
+    // catalog (pixel_asset_key == that catalog's id, e.g. 'item_017') and
+    // resolve to its bundled art; items with no catalog counterpart fall back
+    // to the placeholder glyph, same as mock mode.
+    final assetKey = json['pixel_asset_key'] as String?;
+    return AvatarItem(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String?,
+      itemType: json['item_type'] as String? ?? ItemType.item,
+      rarity: json['rarity'] as String? ?? 'common',
+      priceCoins: (json['price_coins'] as num?)?.toInt() ?? 0,
+      imageUrl: json['image_url'] as String?,
+      asset: AssetCatalog.itemById[assetKey]?.asset,
+      assetKey: assetKey,
+      // The store listing carries no ownership flags; the repository fills
+      // isOwned in from the inventory.
+      isOwned: json['is_owned'] as bool? ?? false,
+      isEquipped: json['is_equipped'] as bool? ?? false,
+    );
+  }
 }
 
 const _unset = Object();

@@ -39,7 +39,7 @@ Layering is consistent: **Widget → Provider → Repository → Api → Dio**. 
 - `AsyncNotifierProvider` for screen state that loads + mutates: `authStateProvider`, `questFeedProvider`, `storeProvider`, `weeklyProvider`, `settingsProvider`, `appearanceProvider`.
 - `AsyncNotifierProvider.autoDispose.family` for the per-quest completion flow (`questCompletionProvider(questId)`).
 - `FutureProvider` for read-only fetches: `statsProvider`, `achievementsProvider`, `questDetailProvider` (family).
-- `NotifierProvider` for synchronous in-memory state: `walkingSessionProvider`, `npcEncounterProvider`, `acceptedNpcQuestsProvider`.
+- `NotifierProvider` for synchronous in-memory state: `walkingSessionProvider`, `npcEncounterProvider`, `acceptedNpcQuestsProvider`, `acceptedQuestIdsProvider`.
 
 Cross-provider coordination is done via `ref.invalidate(...)` and notifier method calls (e.g. completing a quest invalidates `questFeedProvider` and calls `authStateProvider.notifier.refreshUser()`). `ref.listen` bridges auth changes into the router.
 

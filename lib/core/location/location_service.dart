@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geolocator/geolocator.dart';
 
 /// Thrown when the current location cannot be obtained. The feed screen uses
@@ -49,8 +51,26 @@ class LocationService {
       );
     }
 
-    final position = await Geolocator.getCurrentPosition();
-    return LatLng(position.latitude, position.longitude);
+    // A best-accuracy fix can take a long time indoors — or never arrive — and
+    // both the quest feed and the map block on this call, so an uncapped wait
+    // means an endless spinner. Cap it, then fall back to the last known fix
+    // before giving up: a slightly stale position still finds nearby quests.
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+      return LatLng(position.latitude, position.longitude);
+    } on TimeoutException {
+      final last = await Geolocator.getLastKnownPosition();
+      if (last != null) return LatLng(last.latitude, last.longitude);
+      throw const LocationException(
+        'Could not get a location fix. Try moving somewhere with a clearer '
+        'view of the sky.',
+      );
+    }
   }
 
   Future<void> openSettings() => Geolocator.openAppSettings();

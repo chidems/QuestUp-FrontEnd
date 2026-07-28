@@ -7,7 +7,8 @@ class Quest {
   final int difficulty;
   final int xpReward;
   final int coinReward;
-  final String status; // active / completed / skipped / expired / failed
+  // active = available to pick up; accepted = taken on by the player.
+  final String status; // active / accepted / completed / skipped / expired / failed
   final double? targetLatitude;
   final double? targetLongitude;
   final String? targetPlaceName;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -8,6 +9,7 @@ import '../../../shared/widgets/category_icon.dart';
 import '../../../shared/widgets/pixel_box.dart';
 import '../../../shared/widgets/pixel_button.dart';
 import '../models/quest_models.dart';
+import '../providers/accepted_quests_provider.dart';
 import '../providers/quest_detail_provider.dart';
 
 class QuestDetailScreen extends ConsumerWidget {
@@ -113,20 +115,130 @@ class _QuestDetailBody extends StatelessWidget {
             ],
           ),
         ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: PixelButton(
-                label: 'Complete Quest',
-                onPressed: () => context.push('/quests/${quest.id}/complete'),
-              ),
+        _QuestActions(quest: quest),
+      ],
+    );
+  }
+}
+
+/// Bottom action bar. A quest the player has not picked up yet can only be
+/// accepted; once it is active it can be completed or abandoned.
+class _QuestActions extends ConsumerStatefulWidget {
+  final Quest quest;
+  const _QuestActions({required this.quest});
+
+  @override
+  ConsumerState<_QuestActions> createState() => _QuestActionsState();
+}
+
+class _QuestActionsState extends ConsumerState<_QuestActions> {
+  bool _busy = false;
+
+  Future<void> _accept() async {
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    try {
+      await ref.read(acceptedQuestIdsProvider.notifier).accept(widget.quest.id);
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Quest accepted! Find it in Active Quests.'),
+        ),
+      );
+      // Land on the feed so the quest is visible in its new home.
+      router.go(RouteNames.home);
+    } catch (e) {
+      if (mounted) setState(() => _busy = false);
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not accept this quest: $e')),
+      );
+    }
+  }
+
+  Future<void> _abandon() async {
+    // Abandoning skips the quest for good, so make that explicit first.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.colors.surface,
+        title: const Text('Abandon this quest?'),
+        content: const Text(
+          "It won't come back, but a new quest will take its place.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Keep it'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Abandon'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    try {
+      await ref
+          .read(acceptedQuestIdsProvider.notifier)
+          .abandon(widget.quest.id);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Quest abandoned.')),
+      );
+      router.go(RouteNames.home);
+    } catch (e) {
+      if (mounted) setState(() => _busy = false);
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not abandon this quest: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accepted =
+        isQuestAccepted(widget.quest, ref.watch(acceptedQuestIdsProvider));
+    final complete = PixelButton(
+      label: 'Complete Quest',
+      fullWidth: true,
+      onPressed: () => context.push('/quests/${widget.quest.id}/complete'),
+    );
+
+    final Widget actions;
+    if (!accepted) {
+      actions = PixelButton(
+        label: 'Accept Quest',
+        fullWidth: true,
+        isLoading: _busy,
+        onPressed: _busy ? null : _accept,
+      );
+    } else if (widget.quest.isWeekly) {
+      // The weekly quest is assigned for the week — completable, not droppable.
+      actions = complete;
+    } else {
+      actions = Row(
+        children: [
+          Expanded(
+            child: PixelButton(
+              label: 'Abandon',
+              fullWidth: true,
+              variant: PixelButtonVariant.destructive,
+              onPressed: _busy ? null : _abandon,
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(flex: 2, child: complete),
+        ],
+      );
+    }
+
+    return SafeArea(
+      top: false,
+      child: Padding(padding: const EdgeInsets.all(16), child: actions),
     );
   }
 }

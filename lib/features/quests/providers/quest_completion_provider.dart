@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/config/app_config.dart';
+import '../../../core/location/location_service.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -29,6 +31,19 @@ class QuestCompletionNotifier extends AsyncNotifier<QuestCompletionResult?> {
   @override
   Future<QuestCompletionResult?> build() async => null;
 
+  /// Where the player says they finished, sent so the backend can verify they
+  /// were actually at a location quest's target. Best-effort by design: a
+  /// player who genuinely did the quest must not be blocked by a bad GPS fix,
+  /// so any failure completes the quest without coordinates.
+  Future<LatLng?> _completionLocation() async {
+    if (AppConfig.useMockApi) return null;
+    try {
+      return await ref.read(locationServiceProvider).getCurrentLocation();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> submit({XFile? photo}) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -40,9 +55,13 @@ class QuestCompletionNotifier extends AsyncNotifier<QuestCompletionResult?> {
       }
       uploadedPhotoUrl = photoUrl;
 
-      final result = await ref
-          .read(questRepositoryProvider)
-          .completeQuest(_questId, photoUrl: photoUrl);
+      final where = await _completionLocation();
+      final result = await ref.read(questRepositoryProvider).completeQuest(
+            _questId,
+            photoUrl: photoUrl,
+            completionLat: where?.latitude,
+            completionLng: where?.longitude,
+          );
 
       // Reflect the new XP/coins/quest list across the app.
       ref.invalidate(questFeedProvider);

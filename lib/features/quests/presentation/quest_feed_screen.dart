@@ -19,6 +19,7 @@ import '../../npc/presentation/npc_encounter_modal.dart';
 import '../../npc/presentation/walking_status_banner.dart';
 import '../models/quest_models.dart';
 import '../providers/accepted_npc_quests_provider.dart';
+import '../providers/accepted_quests_provider.dart';
 import '../providers/quest_feed_provider.dart';
 import 'quest_card.dart';
 
@@ -62,6 +63,7 @@ class QuestFeedScreen extends ConsumerWidget {
                 child: _FeedBody(
                   feed: data,
                   npcQuests: ref.watch(acceptedNpcQuestsProvider),
+                  acceptedIds: ref.watch(acceptedQuestIdsProvider),
                 ),
               ),
             ),
@@ -75,13 +77,22 @@ class QuestFeedScreen extends ConsumerWidget {
 class _FeedBody extends StatelessWidget {
   final QuestFeed feed;
   final List<Quest> npcQuests;
-  const _FeedBody({required this.feed, required this.npcQuests});
+  final Set<String> acceptedIds;
+
+  const _FeedBody({
+    required this.feed,
+    required this.npcQuests,
+    required this.acceptedIds,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // NPC quests lead the active list so the player notices the one they just
+    // NPC quests lead the list so the player notices the one they just
     // accepted; the feed's own quests follow.
-    final active = [...npcQuests, ...feed.normalQuests];
+    final all = [...npcQuests, ...feed.normalQuests];
+    final active = all.where((q) => isQuestAccepted(q, acceptedIds)).toList();
+    final available =
+        all.where((q) => !isQuestAccepted(q, acceptedIds)).toList();
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -105,23 +116,46 @@ class _FeedBody extends StatelessWidget {
           const EmptyState(
             icon: Icons.explore_off,
             message:
-                'No active quests right now.\n'
-                'Pull down to refresh and find new ones.',
+                'No active quests yet.\n'
+                'Accept one below to get started.',
           )
         else
-          for (var i = 0; i < active.length; i++)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _StaggerIn(
-                index: i + 1,
-                child: QuestCard(
-                  quest: active[i],
-                  onTap: () => context.push('/quests/${active[i].id}'),
-                ),
-              ),
-            ),
+          ..._questCards(context, active, startIndex: 1),
+        const SizedBox(height: 24),
+        _SectionHeader('Available Quests'),
+        const SizedBox(height: 8),
+        if (available.isEmpty)
+          const EmptyState(
+            icon: Icons.explore_off,
+            message:
+                'No new quests nearby.\n'
+                'Pull down to refresh and find more.',
+          )
+        else
+          ..._questCards(context, available, startIndex: active.length + 1),
       ],
     );
+  }
+
+  /// Quest cards with a continuous stagger index across both sections.
+  List<Widget> _questCards(
+    BuildContext context,
+    List<Quest> quests, {
+    required int startIndex,
+  }) {
+    return [
+      for (var i = 0; i < quests.length; i++)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _StaggerIn(
+            index: startIndex + i,
+            child: QuestCard(
+              quest: quests[i],
+              onTap: () => context.push('/quests/${quests[i].id}'),
+            ),
+          ),
+        ),
+    ];
   }
 }
 
