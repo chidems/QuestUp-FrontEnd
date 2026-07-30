@@ -23,12 +23,16 @@ class WeeklyPhotoPost {
 
   // Shaped from GET /community/weekly/{id}/posts. The backend exposes the
   // poster's user_id (no display name yet) and no timestamp.
+  //
+  // userDisplayName never falls back to the raw user_id — a UUID means
+  // nothing to a player and reads like a bug. The screen shows "You" for the
+  // current user's own post (known locally from authStateProvider) and this
+  // generic label for everyone else's, until the backend adds real names.
   factory WeeklyPhotoPost.fromJson(Map<String, dynamic> json) => WeeklyPhotoPost(
         id: json['id']?.toString() ?? '',
         userId: json['user_id']?.toString(),
-        userDisplayName: json['user_display_name'] as String? ??
-            json['user_id']?.toString() ??
-            'Adventurer',
+        userDisplayName:
+            json['user_display_name'] as String? ?? 'A Fellow Adventurer',
         photoUrl: json['photo_url'] as String? ?? '',
         questTitle: json['quest_title'] as String? ?? '',
         caption: json['caption'] as String?,

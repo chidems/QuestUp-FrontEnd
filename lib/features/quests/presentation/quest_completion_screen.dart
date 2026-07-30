@@ -75,10 +75,20 @@ class _QuestCompletionScreenState
 
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref.read(weeklyProvider.notifier).sharePhoto(
+      final post = await ref.read(weeklyProvider.notifier).sharePhoto(
             photoUrl: photoUrl,
             userQuestId: quest.id,
           );
+      // The backend has nowhere to host the photo yet (photoUrl is a
+      // local:// placeholder) — remember the real local file against this
+      // post's id so this device can still show it instead of a "pending"
+      // placeholder. _photo, not just photoUrl: the upload never actually
+      // sent the file anywhere, so the on-device path is all that's real.
+      if (_photo case final photo?) {
+        await ref
+            .read(localPhotoCacheProvider)
+            .savePath(post.id, photo.path);
+      }
       messenger.showSnackBar(
         const SnackBar(content: Text('Shared to the community!')),
       );

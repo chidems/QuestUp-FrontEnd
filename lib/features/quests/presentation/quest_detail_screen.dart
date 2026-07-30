@@ -11,6 +11,7 @@ import '../../../shared/widgets/pixel_button.dart';
 import '../models/quest_models.dart';
 import '../providers/accepted_quests_provider.dart';
 import '../providers/quest_detail_provider.dart';
+import '../providers/quest_feed_provider.dart';
 
 class QuestDetailScreen extends ConsumerWidget {
   final String questId;
@@ -202,6 +203,18 @@ class _QuestActionsState extends ConsumerState<_QuestActions> {
   Widget build(BuildContext context) {
     final accepted =
         isQuestAccepted(widget.quest, ref.watch(acceptedQuestIdsProvider));
+    // This screen's own fetch (GET /quests/{id}) and the feed's copy of the
+    // weekly quest (POST /quests/session/open, watched by the Weekly tab) are
+    // two separate calls against the same underlying record. Cross-check the
+    // feed's copy too, so a completed weekly quest can't show "Complete
+    // Quest" here just because this screen's own fetch lagged behind.
+    final feedWeekly = widget.quest.isWeekly
+        ? ref.watch(questFeedProvider).value?.weeklyQuest
+        : null;
+    final completed = widget.quest.status == 'completed' ||
+        (feedWeekly != null &&
+            feedWeekly.id == widget.quest.id &&
+            feedWeekly.status == 'completed');
     final complete = PixelButton(
       label: 'Complete Quest',
       fullWidth: true,
@@ -209,7 +222,18 @@ class _QuestActionsState extends ConsumerState<_QuestActions> {
     );
 
     final Widget actions;
-    if (!accepted) {
+    if (completed) {
+      // Otherwise a completed weekly quest — which stays in the feed for the
+      // rest of the week rather than disappearing like a normal quest —
+      // would keep offering "Complete Quest" every time it's reopened.
+      actions = const PixelButton(
+        label: 'Quest Completed',
+        icon: Icons.check_circle,
+        fullWidth: true,
+        variant: PixelButtonVariant.neutral,
+        onPressed: null,
+      );
+    } else if (!accepted) {
       actions = PixelButton(
         label: 'Accept Quest',
         fullWidth: true,
