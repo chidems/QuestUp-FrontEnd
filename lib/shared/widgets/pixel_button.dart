@@ -98,11 +98,19 @@ class _PixelButtonState extends State<PixelButton> {
                 Icon(widget.icon, size: 16, color: textColor),
                 const SizedBox(width: 8),
               ],
-              Text(
-                widget.label,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelLarge?.copyWith(color: textColor),
+              // Flexible + ellipsis: at larger system font scales (or in a
+              // cramped Expanded, e.g. the quest detail Abandon/Complete
+              // row) the label's natural width can exceed what's available.
+              // Without this the Row overflows instead of shrinking.
+              Flexible(
+                child: Text(
+                  widget.label,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(color: textColor),
+                ),
               ),
             ],
           );
